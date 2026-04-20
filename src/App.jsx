@@ -686,7 +686,7 @@ const InputField = ({ label, name, placeholder, type="text", value, onChange, id
   </div>
 );
 
-const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSync, socialLinks, homeData, systemConfig, db, appId, featuredVideos }) => {
+const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSync, socialLinks, homeData, systemConfig, db, appId, featuredVideos, user, onCopyUid }) => {
   const [studioTab, setStudioTab] = useState('archive');
   const [activeType, setActiveType] = useState('book');
   const [managerSearch, setManagerSearch] = useState('');
@@ -1046,9 +1046,9 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
                  <div className="flex items-center gap-3 text-red-600 font-black uppercase tracking-widest text-[10px]"><Zap size={16}/> Gemini API Overrides</div>
                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Entering a key here will override the `VITE_GEMINI_API_KEY` defined in the build environment. This persists across all your devices.</p>
                  <InputField label="Gemini API Key" placeholder="Paste key here..." value={systemForm.geminiApiKey} onChange={e => setSystemForm({...systemForm, geminiApiKey: e.target.value})} />
-              </div>
+               </div>
 
-              <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 space-y-6 dark:bg-slate-950 dark:border-slate-800">
+               <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 space-y-6 dark:bg-slate-950 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">Content Synchronization</h3>
@@ -1058,6 +1058,21 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
                     {isVideoLoading ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
                     {isVideoLoading ? 'Syncing...' : 'Refresh YouTube Feed'}
                   </button>
+                </div>
+              </div>
+
+              <div className="bg-slate-900 p-8 rounded-[2rem] border border-slate-800 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2"><Fingerprint className="text-red-600" size={14}/> Security & Identity</h3>
+                    <p className="text-[10px] text-slate-400 mt-1">Use this UID to whitelist your device in Firebase Security Rules.</p>
+                  </div>
+                  <button type="button" onClick={onCopyUid} className="flex items-center gap-2 px-6 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition-all border border-white/5">
+                    <Copy size={12} /> Copy Device UID
+                  </button>
+                </div>
+                <div className="p-4 bg-white/5 rounded-xl border border-white/5">
+                   <code className="text-[10px] text-red-400 font-mono break-all">{user?.uid || 'Not Authenticated'}</code>
                 </div>
               </div>
               
@@ -1109,7 +1124,7 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
         </div>
       )}
 
-      {studioTab !== 'home' && (
+      {studioTab !== 'home' && studioTab !== 'system' && (
         <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           <div className="p-8 bg-slate-50/5 flex justify-between items-center border-b border-slate-50 dark:bg-slate-950/50 dark:border-slate-800">
             <div className="flex flex-col">

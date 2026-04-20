@@ -32,6 +32,22 @@ A partitioned management suite designed for organizational efficiency.
 - **Passkey Protection**: Secure login portal for accessing sensitive research and management tools.
 - **Firebase Auth**: Robust authentication infrastructure ensuring secure Firestore and Storage interactions.
 
+### 🛡️ Admin UID & Server-Side Security
+To prevent unauthorized database access, use your unique **Admin UID** to lock down Firestore:
+1.  Navigate to **Creator Studio > System Settings**.
+2.  Copy your **Device UID** from the "Security & Identity" section.
+3.  In your **Firebase Console**, update your Security Rules to only allow writes from your specific UID:
+    ```javascript
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /artifacts/pramu-talks-v2/public/data/{document=**} {
+          allow read: if true;
+          allow write: if request.auth.uid == "YOUR_COPIED_UID_HERE";
+        }
+      }
+    }
+    ```
+
 ## 🎨 Design & Experience
 
 ### Aesthetics & Theme
