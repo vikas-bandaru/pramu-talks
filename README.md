@@ -10,51 +10,58 @@ An AI-powered academic assistant grounded in the **Gemini 3 Flash** engine.
 - **Source Citations**: Automatically provides direct links to external sources used in analysis.
 - **Rich Formatting**: Beautifully rendered markdown responses with hierarchical headers and bold highlights.
 
-### 2. Centralized YouTube Synchronization
-A quota-protected media engine that keeps the video library up-to-date.
-- **Firestore Caching**: Top videos are synced manually to a central Firestore document, allowing public users to view the feed without consuming Gemini API quota.
-- **Admin Management**: Only authorized users can trigger a fresh sync from the YouTube channel via the Creator Studio.
+### 2. Media Upload & Storage
+Secure, scalable file management integrated directly into the archive.
+- **PDF Hosting**: Direct PDF upload for "Book" entries (Max 10MB), allowing users to read primary texts directly.
+- **Audio Streaming**: Narrator-ready audio upload for "Audiobook" entries (Max 20MB).
+- **Firebase Storage Integration**: Utilizes industry-standard cloud storage to ensure high-speed delivery and data integrity.
 
-### 3. Creator Studio (Admin Portal)
-A comprehensive management suite for the archive.
-- **Content Management**: Add, edit, or delete books, essays, reviews, and stories.
-- **Social Hub**: Centralized configuration for YouTube, Twitter, Facebook, and Instagram handles.
-- **Metadata Extraction**: AI-assisted tool to automatically extract titles and thumbnails from provided links.
+### 3. Creator Studio (Modern Admin Portal)
+A partitioned management suite designed for organizational efficiency.
+- **Archive Studio**: Full CRUD operations for books, essays, and reviews with integrated media uploaders.
+- **Home Editor**: A dedicated space for managing landing page headings, philosophy sections, and the "Media Moments" gallery.
+- **Video Manager**: Context-aware tool for curating the "Trending Now" playlist.
+- **Contextual Live Manager**: A dynamic entry manager that adapts its display based on whether you are editing videos or archive entries.
 
-### 4. Security & Access
+### 4. Smart YouTube Synchronization
+- **System-Level Sync**: "Refresh YouTube Feed" tool moved to System Settings to prevent accidental triggers while managing content.
+- **Firestore Caching**: Syncs the latest channel activity to Firestore to protect API quotas and ensuring instant page loads for public visitors.
+
+### 5. Security & Access
 - **The Gatekeeper**: A non-intrusive "triple-click" logic on the brand icon acts as a secret gateway for administrators.
-- **Passkey Protection**: Secure login modal for accessing sensitive research and management tools.
-- **Firebase Auth**: Robust anonymous authentication ensuring secure Firestore interactions.
+- **Passkey Protection**: Secure login portal for accessing sensitive research and management tools.
+- **Firebase Auth**: Robust authentication infrastructure ensuring secure Firestore and Storage interactions.
 
-## 🎨 Design Philosophy
+## 🎨 Design & Experience
 
-### Aesthetics
-- **Slate & Red Palette**: Deep Slate-900 foundations with vibrant Red-600 accents, symbolizing "Poetry in Journalism."
+### Aesthetics & Theme
+- **Global Dark Theme Support**: The entire platform, including the administrative Live Manager, follows a unified theme system.
+- **Circadian Theming**: Automatic dark/light mode transitions based on the user's local time (e.g., shifts to Dark Theme at 6 PM).
 - **Glassmorphism**: Subtle backdrop blurs and semi-transparent layers for a premium, state-of-the-art feel.
-- **Typography**: Heavily bold, uppercase headers (Inter/System Sans) for an authoritative, journalistic look.
 
-### User Experience
-- **Responsive Navigation**: A custom-built mobile navigation drawer for seamless access across devices.
-- **Micro-Animations**: Zoom-in transitions and hover-scale effects to make the interface feel alive and interactive.
+### User Interaction
+- **Micro-Animations**: Zoom-in transitions, hover-scale effects, and pulse indicators for active admin states.
+- **Responsive Navigation**: A custom-built mobile navigation drawer and "No-Scrollbar" horizontally scrolling moments gallery.
 
 ## ⚙️ Technical Architecture
 
-- **Engine**: React 19 + Vite (High-performance rendering and HMR).
-- **Intelligence**: Google Gemini 3 Flash (`gemini-3-flash-preview`).
-- **Database**: Google Cloud Firestore (Serverless document storage).
-- **Styling**: Tailwind CSS 4.0 + Vanilla CSS custom utilities.
+- **Engine**: React 19 + Vite.
+- **Intelligence**: Google Gemini 3 Flash.
+- **Database**: Firebase Firestore.
+- **Cloud Storage**: Firebase Storage.
+- **Styling**: Tailwind CSS 4.0.
 - **Icons**: Lucide React.
-- **Markdown**: React-Markdown for AI response rendering.
+- **Markdown**: React-Markdown for AI and text rendering.
 
 ## 📦 Getting Started
 
 1. **Prerequisites**:
    - Node.js (v18+)
    - A Google AI Studio API Key (Gemini API)
-   - A Firebase Project with Firestore and Anonymous Auth enabled.
+   - A Firebase Project with Firestore, Storage, and Anonymous Auth enabled.
 
 2. **Environment Setup**:
-   Paste your configuration into the `myFirebaseConfig` and `geminiApiKey` variables at the top of `App.jsx`.
+   Paste your configuration into the `myFirebaseConfig` and `geminiApiKey` variables at the top of `App.jsx`, or use the **System Settings** in the Studio to override keys at runtime.
 
 3. **Development**:
    ```bash

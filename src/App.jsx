@@ -7,6 +7,9 @@ import {
   doc, deleteDoc, updateDoc, query, orderBy, initializeFirestore
 } from 'firebase/firestore';
 import { 
+  getStorage, ref, uploadBytes, getDownloadURL 
+} from 'firebase/storage';
+import { 
   getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged 
 } from 'firebase/auth';
 import { 
@@ -57,6 +60,7 @@ const auth = getAuth(app);
 const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
+const storage = getStorage(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'pramu-talks-v2';
 
 const DEFAULT_HOME_CONTENT = {
@@ -595,8 +599,10 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter }) => 
               {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
             </div>
             <div className="mt-auto">
-              {(work.link || work.purchaseLink || work.youtubeLink) && (
-                <a href={work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">Access Work</a>
+              {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
+                <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
+                  {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
+                </a>
               )}
             </div>
           </div>
@@ -673,6 +679,13 @@ const Footer = ({ socials }) => (
   </footer>
 );
 
+const InputField = ({ label, name, placeholder, type="text", value, onChange, id }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">{label}</label>
+    <input id={id} name={name} className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder={placeholder} value={value} onChange={onChange} type={type} />
+  </div>
+);
+
 const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSync, socialLinks, homeData, systemConfig, db, appId, featuredVideos }) => {
   const [studioTab, setStudioTab] = useState('archive');
   const [activeType, setActiveType] = useState('book');
@@ -685,7 +698,8 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
   const [form, setForm] = useState({
     title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', 
     purchaseLink: '', awards: '', link: '', magazine: '', 
-    sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: ''
+    sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '',
+    pdfUrl: '', audioUrl: ''
   });
 
   const [homeForm, setHomeForm] = useState(homeData);
@@ -733,7 +747,7 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
     if (editingId) await onUpdate(editingId, { ...form, type: activeType });
     else await onAdd({ ...form, type: activeType });
     setEditingId(null);
-    setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '' });
+    setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   };
@@ -752,6 +766,37 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const maxSizeMap = {
+      'pdf': 10 * 1024 * 1024, // 10MB
+      'audio': 20 * 1024 * 1024 // 20MB
+    };
+
+    if (file.size > maxSizeMap[type]) {
+      alert(`File too large! Max limit for ${type.toUpperCase()} is ${maxSizeMap[type] / (1024 * 1024)}MB to comply with system limits.`);
+      return;
+    }
+
+    setIsFetching(true);
+    try {
+      const storageRef = ref(storage, `artifacts/${appId}/${type}/${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      if (type === 'pdf') setForm(prev => ({ ...prev, pdfUrl: url }));
+      else if (type === 'audio') setForm(prev => ({ ...prev, audioUrl: url }));
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("Upload failed. Please check your connection.");
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
   const types = [
     { id: 'book', label: 'Book', icon: Book },
     { id: 'essay', label: 'Essay/Article', icon: Newspaper },
@@ -759,13 +804,6 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
     { id: 'review', label: 'Review', icon: Star },
     { id: 'audiobook', label: 'Audiobook', icon: Headphones }
   ];
-
-  const InputField = ({ label, name, placeholder, type="text", value, onChange, id }) => (
-    <div className="space-y-2">
-      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">{label}</label>
-      <input id={id} name={name} className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder={placeholder} value={value} onChange={onChange} type={type} />
-    </div>
-  );
 
   return (
     <div className="max-w-7xl mx-auto py-16 px-4 space-y-12 animate-in zoom-in-95 duration-300">
@@ -836,20 +874,13 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
       {studioTab === 'archive' && (
         <div className="bg-white rounded-[3rem] shadow-2xl p-8 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Archive Updated</div>}
-          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><PenTool className="text-red-600" /> {editingId ? 'Edit Entry' : 'Studio'}</h2>
-          {!editingId && (
-              <div className="flex flex-wrap gap-2 mb-10 items-center justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {types.map(t => (
-                    <button key={t.id} onClick={() => setActiveType(t.id)} className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-widest text-[8px] transition-all ${activeType === t.id ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-400'}`}><t.icon size={12} /> {t.label}</button>
-                  ))}
-                </div>
-                <button type="button" onClick={() => onSync()} disabled={isVideoLoading} className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-all disabled:opacity-50">
-                  {isVideoLoading ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
-                  {isVideoLoading ? 'Syncing...' : 'Refresh YouTube Feed'}
-                </button>
-              </div>
-          )}
+          <div className="flex flex-wrap gap-2 mb-10 items-center justify-between">
+            <div className="flex flex-wrap gap-2">
+              {types.map(t => (
+                <button key={t.id} onClick={() => setActiveType(t.id)} className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-widest text-[8px] transition-all ${activeType === t.id ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-400'}`}><t.icon size={12} /> {t.label}</button>
+              ))}
+            </div>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-6">
@@ -865,9 +896,36 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
                 <InputField label="Work Title" name="title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
               </div>
               <div className="space-y-6">
-                {activeType === 'book' && <><InputField label="Publishing Year" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /><InputField label="Purchase Link" name="purchaseLink" value={form.purchaseLink} onChange={e => setForm({...form, purchaseLink: e.target.value})} /><InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({...form, awards: e.target.value})} /></>}
+                {activeType === 'book' && <>
+                  <InputField label="Publishing Year" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
+                  <InputField label="Purchase Link" name="purchaseLink" value={form.purchaseLink} onChange={e => setForm({...form, purchaseLink: e.target.value})} />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">PDF Upload (Max 10MB)</label>
+                    <div className="flex gap-2">
+                      <input type="file" accept=".pdf" onChange={(e) => handleFileUpload(e, 'pdf')} className="hidden" id="pdf-upload" />
+                      <button type="button" onClick={() => document.getElementById('pdf-upload').click()} className="flex-1 p-4 bg-slate-100 rounded-2xl border-none font-bold text-xs dark:bg-slate-950 dark:text-white flex items-center justify-center gap-2">
+                        {isFetching ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />} {form.pdfUrl ? 'Update PDF' : 'Upload PDF'}
+                      </button>
+                      {form.pdfUrl && <div className="p-4 bg-green-500/10 text-green-500 rounded-2xl flex items-center px-4"><CheckCircle2 size={14} /></div>}
+                    </div>
+                  </div>
+                  <InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({...form, awards: e.target.value})} />
+                </>}
                 {(activeType === 'essay' || activeType === 'story') && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({...form, magazine: e.target.value})} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /></>}
                 {activeType === 'review' && <><InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} /><InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} /><InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} /></>}
+                {activeType === 'audiobook' && <>
+                  <InputField label="Narrator / Author" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Audio Upload (Max 20MB)</label>
+                    <div className="flex gap-2">
+                      <input type="file" accept="audio/*" onChange={(e) => handleFileUpload(e, 'audio')} className="hidden" id="audio-upload" />
+                      <button type="button" onClick={() => document.getElementById('audio-upload').click()} className="flex-1 p-4 bg-slate-100 rounded-2xl border-none font-bold text-xs dark:bg-slate-950 dark:text-white flex items-center justify-center gap-2">
+                        {isFetching ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />} {form.audioUrl ? 'Update Audio' : 'Upload Audio'}
+                      </button>
+                      {form.audioUrl && <div className="p-4 bg-green-500/10 text-green-500 rounded-2xl flex items-center px-4"><CheckCircle2 size={14} /></div>}
+                    </div>
+                  </div>
+                </>}
                 <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Summary..." value={form.brief || ''} onChange={e => setForm({...form, brief: e.target.value})} />
                 <InputField label="Manual Thumbnail URL" name="thumbnail" value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} />
               </div>
@@ -989,68 +1047,116 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Entering a key here will override the `VITE_GEMINI_API_KEY` defined in the build environment. This persists across all your devices.</p>
                  <InputField label="Gemini API Key" placeholder="Paste key here..." value={systemForm.geminiApiKey} onChange={e => setSystemForm({...systemForm, geminiApiKey: e.target.value})} />
               </div>
+
+              <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 space-y-6 dark:bg-slate-950 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">Content Synchronization</h3>
+                    <p className="text-[10px] text-slate-500 mt-1">Manually trigger a sync with external platforms.</p>
+                  </div>
+                  <button type="button" onClick={() => onSync()} disabled={isVideoLoading} className="flex items-center gap-2 px-6 py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20">
+                    {isVideoLoading ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                    {isVideoLoading ? 'Syncing...' : 'Refresh YouTube Feed'}
+                  </button>
+                </div>
+              </div>
               
               <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Apply System Config</button>
            </form>
         </div>
       )}
 
-      <div className="bg-slate-900 rounded-[3rem] shadow-2xl p-8 md:p-14 text-white relative overflow-hidden">
-        <div className="relative z-10">
-          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-10"><Globe className="text-red-600" /> Social Hub</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">YouTube Channel</label>
-                <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.youtube || ''} onChange={async (e) => {
-                  const val = e.target.value;
-                  await setDoc(doc(getFirestore(), 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, youtube: val });
-                }} placeholder="https://youtube.com/@..." />
+      {studioTab === 'home' && (
+        <div className="bg-slate-900 rounded-[3rem] shadow-2xl p-8 md:p-14 text-white relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-10"><Globe className="text-red-600" /> Social Hub</h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">YouTube Channel</label>
+                  <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.youtube || ''} onChange={async (e) => {
+                    const val = e.target.value;
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, youtube: val });
+                  }} placeholder="https://youtube.com/@..." />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Twitter / X</label>
+                  <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.twitter || ''} onChange={async (e) => {
+                    const val = e.target.value;
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, twitter: val });
+                  }} />
+                </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Twitter / X</label>
-                <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.twitter || ''} onChange={async (e) => {
-                  const val = e.target.value;
-                  await setDoc(doc(getFirestore(), 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, twitter: val });
-                }} />
-              </div>
-            </div>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Facebook</label>
-                <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.facebook || ''} onChange={async (e) => {
-                  const val = e.target.value;
-                  await setDoc(doc(getFirestore(), 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, facebook: val });
-                }} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Instagram</label>
-                <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.instagram || ''} onChange={async (e) => {
-                  const val = e.target.value;
-                  await setDoc(doc(getFirestore(), 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, instagram: val });
-                }} />
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Facebook</label>
+                  <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.facebook || ''} onChange={async (e) => {
+                    const val = e.target.value;
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, facebook: val });
+                  }} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Instagram</label>
+                  <input className="w-full p-5 bg-white/5 rounded-2xl border border-white/10 focus:ring-2 focus:ring-red-500 font-bold outline-none text-sm text-white" value={socialLinks.instagram || ''} onChange={async (e) => {
+                    const val = e.target.value;
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'social_config'), { ...socialLinks, instagram: val });
+                  }} />
+                </div>
               </div>
             </div>
           </div>
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full -mb-32 -mr-32" />
         </div>
-        <div className="absolute bottom-0 right-0 w-64 h-64 bg-red-600/20 blur-[100px] rounded-full -mb-32 -mr-32" />
-      </div>
+      )}
 
-      <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden">
-        <div className="p-8 bg-slate-50/5 flex justify-between items-center border-b border-slate-50"><h3 className="text-2xl font-black uppercase tracking-tighter">Live Manager</h3><input value={managerSearch} onChange={e => setManagerSearch(e.target.value)} placeholder="Filter..." className="pl-6 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none" /></div>
-        <div className="overflow-x-auto"><table className="w-full text-left"><tbody className="divide-y divide-slate-50">
-          {works.filter(w => w.title?.toLowerCase().includes(managerSearch.toLowerCase())).map(work => (
-            <tr key={work.id} className={`group hover:bg-slate-50 transition-colors ${editingId === work.id ? 'bg-red-50' : ''}`}>
-              <td className="px-8 py-4 flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden"><img src={work.thumbnail} className="w-full h-full object-cover" /></div><span className="font-bold text-sm line-clamp-1">{work.title}</span></td>
-              <td className="px-8 py-4"><span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded">{work.type}</span></td>
-              <td className="px-8 py-4 text-right">
-                <button onClick={() => { setEditingId(work.id); setActiveType(work.type); setForm({...work}); window.scrollTo({top:0, behavior:'smooth'}); }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all"><Edit3 size={16} /></button>
-                <button onClick={() => onDelete(work.id)} className="p-2 text-slate-300 hover:text-red-600 transition-all"><Trash2 size={16} /></button>
-              </td>
-            </tr>
-          ))}
-        </tbody></table></div>
-      </div>
+      {studioTab !== 'home' && (
+        <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+          <div className="p-8 bg-slate-50/5 flex justify-between items-center border-b border-slate-50 dark:bg-slate-950/50 dark:border-slate-800">
+            <div className="flex flex-col">
+               <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Live Manager</h3>
+               <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest mt-1">Context: Managing {studioTab === 'video' ? 'Videos' : 'Archive Entries'}</p>
+            </div>
+            <input value={managerSearch} onChange={e => setManagerSearch(e.target.value)} placeholder="Filter entries..." className="pl-6 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-white" />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                {(studioTab === 'video' ? featuredVideos : works).filter(w => (studioTab === 'video' ? w.title : w.title)?.toLowerCase().includes(managerSearch.toLowerCase())).map(work => (
+                <tr key={work.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}>
+                  <td className="px-8 py-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden dark:bg-slate-800">
+                      <img src={work.thumbnail} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="font-bold text-sm line-clamp-1 dark:text-white">{work.title}</span>
+                  </td>
+                  <td className="px-8 py-4">
+                    <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">
+                      {studioTab === 'video' ? 'VIDEO CONTENT' : work.type}
+                    </span>
+                  </td>
+                  <td className="px-8 py-4 text-right">
+                    {studioTab !== 'video' && (
+                      <button onClick={() => { setEditingId(work.id); setActiveType(work.type); setForm({...work}); window.scrollTo({top:0, behavior:'smooth'}); }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all">
+                        <Edit3 size={16} />
+                      </button>
+                    )}
+                    <button onClick={async () => {
+                      if (studioTab === 'video') {
+                        const updated = featuredVideos.filter(v => v.id !== work.id);
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
+                      } else {
+                        onDelete(work.id);
+                      }
+                    }} className="p-2 text-slate-300 hover:text-red-600 transition-all">
+                      <Trash2 size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody></table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
