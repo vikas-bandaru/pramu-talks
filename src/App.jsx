@@ -3,8 +3,8 @@ import ReactMarkdown from 'react-markdown';
 
 import { initializeApp } from 'firebase/app';
 import { 
-  getFirestore, collection, addDoc, onSnapshot, setDoc,
-  doc, deleteDoc, updateDoc, query, orderBy, initializeFirestore
+  getFirestore, collection, addDoc, onSnapshot, setDoc, getDocs,
+  doc, deleteDoc, updateDoc, query, orderBy, initializeFirestore, writeBatch
 } from 'firebase/firestore';
 import { 
   getStorage, ref, uploadBytes, getDownloadURL 
@@ -20,7 +20,8 @@ import {
   School, Heart, Image as ImageIcon, GraduationCap, History,
   Calendar, Link as LinkIcon, FileText, ShoppingCart, Headphones,
   AlertCircle, CheckCircle2, Filter, Edit3, UploadCloud, Zap, Link2,
-  Cpu, Globe, Copy, Fingerprint, Video, Camera, Share2
+  Cpu, Globe, Copy, Fingerprint, Video, Camera, Share2,
+  ArrowUp, ArrowDown, MoveVertical
 } from 'lucide-react';
 
 // =============================================================
@@ -162,10 +163,12 @@ const App = () => {
   useEffect(() => {
     if (!user) return;
     const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
-    const worksQuery = query(worksRef, orderBy('createdAt', 'desc'));
+    const worksQuery = query(worksRef, orderBy('sortOrder', 'desc'));
     const worksUnsub = onSnapshot(worksQuery, (snapshot) => {
       const dbWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setWorks([...INITIAL_SAMPLES, ...dbWorks]);
+      // Sort dbWorks by sortOrder (desc)
+      const sortedWorks = [...INITIAL_SAMPLES, ...dbWorks];
+      setWorks(sortedWorks);
     });
 
     // Centralized Sync Listener
@@ -288,6 +291,40 @@ const App = () => {
   };
 
   const clickTimerRef = useRef(null);
+  const handleInitializeSort = async () => {
+    try {
+      const snapshot = await getDocs(query(collection(db, 'artifacts', appId, 'public', 'data', 'works'), orderBy('createdAt', 'asc')));
+      let count = 0;
+      for (const d of snapshot.docs) {
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'works', d.id), { sortOrder: count++ });
+      }
+      alert("Sort order initialized successfully!");
+    } catch (error) {
+      console.error("Error initializing sort order:", error);
+      alert("Failed to initialize sort order.");
+    }
+  };
+
+  const handleReorderWorks = async (newWorks) => {
+    // Only update DB works (exclude static samples)
+    const dbItems = newWorks.filter(w => !w.id.startsWith('s'));
+    
+    try {
+      const batch = writeBatch(db);
+      // Newest/Top items should have highest sortOrder
+      dbItems.forEach((work, idx) => {
+        const reversedIdx = dbItems.length - 1 - idx;
+        const workRef = doc(db, 'artifacts', appId, 'public', 'data', 'works', work.id);
+        batch.update(workRef, { sortOrder: reversedIdx });
+      });
+      await batch.commit();
+    } catch (error) {
+      console.error("Error saving new order:", error);
+    }
+  };
+
+  const handleMoveWork = () => {}; // No longer used
+
   const handleLogoClick = () => {
     setActiveTab('home');
     setClickCount(prev => {
@@ -304,6 +341,7 @@ const App = () => {
     });
   };
 
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
     if (passkey === 'pramu123') {
@@ -318,7 +356,8 @@ const App = () => {
   const handleAddWork = async (data) => {
     try {
       const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
-      await addDoc(worksRef, { ...data, createdAt: new Date().toISOString() });
+      const nextOrder = works.length > 0 ? Math.max(...works.filter(w => !w.id.startsWith('s')).map(w => w.sortOrder || 0), -1) + 1 : 0;
+      await addDoc(worksRef, { ...data, sortOrder: nextOrder, createdAt: new Date().toISOString() });
       return { success: true };
     } catch (error) {
       console.error("Error adding work:", error);
@@ -469,6 +508,8 @@ const App = () => {
             user={user}
             onCopyUid={copyUid}
             copiedUid={copiedUid}
+            onInitializeSort={handleInitializeSort}
+            onReorder={handleReorderWorks}
           />
         )}
         {activeTab === 'research' && isAdmin && <ResearchLab apiKey={activeApiKey} />}
@@ -806,7 +847,12 @@ const InputField = ({ label, name, placeholder, type="text", value, onChange, id
   </div>
 );
 
-const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSync, socialLinks, homeData, systemConfig, db, appId, featuredVideos, user, onCopyUid, copiedUid }) => {
+const CreatorStudio = ({ 
+  onAdd, onUpdate, works, onDelete, isVideoLoading, 
+  onSync, socialLinks, homeData, systemConfig, db, 
+  appId, featuredVideos, user, onCopyUid, copiedUid,
+  onInitializeSort, onReorder
+}) => {
   const [studioTab, setStudioTab] = useState('archive');
   const [activeType, setActiveType] = useState('book');
   const [managerSearch, setManagerSearch] = useState('');
@@ -1317,18 +1363,69 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
       {studioTab !== 'home' && studioTab !== 'system' && (
         <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           <div className="p-8 bg-slate-50/5 flex justify-between items-center border-b border-slate-50 dark:bg-slate-950/50 dark:border-slate-800">
-            <div className="flex flex-col">
-               <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Live Manager</h3>
-               <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest mt-1">Context: Managing {studioTab === 'video' ? 'Videos' : 'Archive Entries'}</p>
-            </div>
+             <div className="flex flex-col">
+                <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Live Manager</h3>
+                <div className="flex items-center gap-3 mt-1">
+                  <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest">Managing {studioTab === 'video' ? 'Videos' : 'Archive Entries'}</p>
+                  {studioTab !== 'video' && (
+                    <button 
+                      onClick={onInitializeSort}
+                      className="text-[8px] bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-0.5 rounded-lg font-black uppercase tracking-tighter"
+                      title="Run this if works are missing from the list"
+                    >
+                      Fix Sort Order
+                    </button>
+                  )}
+                </div>
+             </div>
             <input value={managerSearch} onChange={e => setManagerSearch(e.target.value)} placeholder="Filter entries..." className="pl-6 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-white" />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
-                {(studioTab === 'video' ? featuredVideos : works).filter(w => (studioTab === 'video' ? w.title : w.title)?.toLowerCase().includes(managerSearch.toLowerCase())).map(work => (
-                <tr key={work.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}>
+                {(studioTab === 'video' ? featuredVideos : works).filter(w => (studioTab === 'video' ? w.title : w.title)?.toLowerCase().includes(managerSearch.toLowerCase())).map((work, idx) => (
+                <tr 
+                  key={work.id} 
+                  draggable={studioTab !== 'video' && !work.id.startsWith('s')}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', idx);
+                    e.currentTarget.classList.add('opacity-40');
+                  }}
+                  onDragEnd={(e) => {
+                    e.currentTarget.classList.remove('opacity-40');
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (studioTab !== 'video') e.currentTarget.classList.add('bg-red-50', 'dark:bg-red-900/10');
+                  }}
+                  onDragLeave={(e) => {
+                    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
+                    if (studioTab === 'video') return;
+                    
+                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                    const toIdx = idx;
+                    
+                    if (fromIdx === toIdx) return;
+                    // Don't allow dropping into static samples area
+                    if (toIdx < INITIAL_SAMPLES.length) return;
+
+                    const newWorks = [...works];
+                    const [movedItem] = newWorks.splice(fromIdx, 1);
+                    newWorks.splice(toIdx, 0, movedItem);
+                    onReorder(newWorks);
+                  }}
+                  className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-grab active:cursor-grabbing ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                >
                   <td className="px-8 py-4 flex items-center gap-3">
+                    {studioTab !== 'video' && !work.id.startsWith('s') && (
+                      <div className="mr-2 text-slate-300">
+                        <MoveVertical size={14} />
+                      </div>
+                    )}
                     <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden dark:bg-slate-800">
                       <img src={work.thumbnail} className="w-full h-full object-cover" />
                     </div>
