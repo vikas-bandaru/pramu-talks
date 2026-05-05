@@ -628,83 +628,90 @@ const HomeView = ({ setActiveTab, data }) => (
   </div>
 );
 
-const WorkDetailView = ({ work, onBack }) => (
-  <div className="max-w-5xl mx-auto px-4 py-20 animate-in fade-in slide-in-from-bottom-10 duration-700">
-    <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-red-600 font-black uppercase tracking-widest text-[10px] mb-12 transition-all active:scale-95">
-      <ChevronLeft size={16} /> Back to Archive
-    </button>
-    
-    <div className="grid md:grid-cols-2 gap-16 items-start">
-      <div className="space-y-8">
-        <div className="aspect-[3/4] bg-slate-100 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:bg-slate-900 dark:border-slate-800 relative">
-          <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800'} className="w-full h-full object-cover" alt={work.title} />
-          <div className="absolute top-6 left-6 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">{work.type}</div>
-        </div>
+const WorkDetailView = ({ work, onBack }) => {
+  const isLandscapeMedia = (work.type === 'review' || work.type === 'audiobook') && (
+    (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
+    (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
+  );
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-20 animate-in fade-in slide-in-from-bottom-10 duration-700">
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-red-600 font-black uppercase tracking-widest text-[10px] mb-12 transition-all active:scale-95">
+        <ChevronLeft size={16} /> Back to Archive
+      </button>
+      
+      <div className="grid md:grid-cols-2 gap-16 items-start">
+        <div className="space-y-8">
+          <div className={`${isLandscapeMedia ? 'aspect-video' : 'aspect-[3/4]'} bg-slate-100 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:bg-slate-900 dark:border-slate-800 relative`}>
+            <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800'} className="w-full h-full object-cover" alt={work.title} />
+            <div className="absolute top-6 left-6 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">{work.type}</div>
+          </div>
         
-        {work.rating && work.type === 'review' && (
-          <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/20">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="flex text-amber-500 gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={18} fill={i < parseInt(work.rating) ? "currentColor" : "none"} />
-                ))}
+          {work.rating && work.type === 'review' && (
+            <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/20">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="flex text-amber-500 gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={18} fill={i < parseInt(work.rating) ? "currentColor" : "none"} />
+                  ))}
+                </div>
+                <span className="text-amber-900 font-black uppercase tracking-widest text-xs dark:text-amber-500">{work.rating}/5 Critic Score</span>
               </div>
-              <span className="text-amber-900 font-black uppercase tracking-widest text-xs dark:text-amber-500">{work.rating}/5 Critic Score</span>
+              <p className="text-[10px] text-amber-700 font-bold dark:text-amber-600/80 uppercase tracking-tight">Official analysis from the Pramu Talks Research Lab.</p>
             </div>
-            <p className="text-[10px] text-amber-700 font-bold dark:text-amber-600/80 uppercase tracking-tight">Official analysis from the Pramu Talks Research Lab.</p>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-10">
-        <div>
-          <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-[0.9] mb-6 dark:text-white lg:text-6xl">{work.title}</h2>
-          <div className="flex flex-wrap gap-4 items-center">
-            {work.pubYear && <div className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Calendar className="inline mr-2" size={12}/> {work.pubYear}</div>}
-            {work.magazine && <div className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest dark:bg-red-900/10 dark:text-red-500"><Newspaper className="inline mr-2" size={12}/> {work.magazine}</div>}
-          </div>
+          )}
         </div>
 
-        <div className="space-y-4">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 border-b border-red-600/10 pb-2">Full Summary & Synthesis</h4>
-          <p className="text-lg text-slate-600 leading-relaxed font-medium dark:text-slate-300">{work.brief || "No summary provided for this archive entry."}</p>
-        </div>
+        <div className="space-y-10">
+          <div>
+            <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-[0.9] mb-6 dark:text-white lg:text-6xl">{work.title}</h2>
+            <div className="flex flex-wrap gap-4 items-center">
+              {work.pubYear && <div className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Calendar className="inline mr-2" size={12}/> {work.pubYear}</div>}
+              {work.magazine && <div className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest dark:bg-red-900/10 dark:text-red-500"><Newspaper className="inline mr-2" size={12}/> {work.magazine}</div>}
+            </div>
+          </div>
 
-        {work.awards && (
-           <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden group">
-              <Award className="text-amber-500 mb-4 transition-transform group-hover:scale-110" size={32} />
-              <h4 className="font-black uppercase tracking-tighter text-xl mb-2">Recognition</h4>
-              <p className="text-slate-400 text-sm leading-relaxed">{work.awards}</p>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[40px] rounded-full" />
-           </div>
-        )}
+          <div className="space-y-4">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 border-b border-red-600/10 pb-2">Full Summary & Synthesis</h4>
+            <p className="text-lg text-slate-600 leading-relaxed font-medium dark:text-slate-300">{work.brief || "No summary provided for this archive entry."}</p>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          {work.pdfUrl && (
-            <a href={work.pdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-red-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all active:scale-95 shadow-xl shadow-red-600/20">
-              <FileText size={18} /> Read PDF
-            </a>
+          {work.awards && (
+             <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden group">
+                <Award className="text-amber-500 mb-4 transition-transform group-hover:scale-110" size={32} />
+                <h4 className="font-black uppercase tracking-tighter text-xl mb-2">Recognition</h4>
+                <p className="text-slate-400 text-sm leading-relaxed">{work.awards}</p>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[40px] rounded-full" />
+             </div>
           )}
-          {work.audioUrl && (
-            <a href={work.audioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-slate-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-black transition-all active:scale-95 dark:bg-slate-800">
-              <Headphones size={18} /> Listen
-            </a>
-          )}
-          {work.purchaseLink && (
-            <a href={work.purchaseLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-white text-slate-900 border-2 border-slate-900 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all active:scale-95 dark:border-white dark:bg-transparent dark:text-white dark:hover:bg-white/10">
-              <ShoppingCart size={18} /> Buy Copy
-            </a>
-          )}
-          {(work.link || work.youtubeLink) && !work.pdfUrl && !work.audioUrl && (
-            <a href={work.link || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-slate-100 text-slate-900 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
-              <Globe size={18} /> Visit Link
-            </a>
-          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            {work.pdfUrl && (
+              <a href={work.pdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-red-600 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-red-700 transition-all active:scale-95 shadow-xl shadow-red-600/20">
+                <FileText size={18} /> Read PDF
+              </a>
+            )}
+            {work.audioUrl && (
+              <a href={work.audioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-slate-900 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-black transition-all active:scale-95 dark:bg-slate-800">
+                <Headphones size={18} /> Listen
+              </a>
+            )}
+            {work.purchaseLink && (
+              <a href={work.purchaseLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-white text-slate-900 border-2 border-slate-900 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all active:scale-95 dark:border-white dark:bg-transparent dark:text-white dark:hover:bg-white/10">
+                <ShoppingCart size={18} /> Buy Copy
+              </a>
+            )}
+            {(work.link || work.youtubeLink) && !work.pdfUrl && !work.audioUrl && (
+              <a href={work.link || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 bg-slate-100 text-slate-900 py-5 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
+                <Globe size={18} /> Visit Link
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSelect }) => (
   <div className="max-w-7xl mx-auto px-4 py-16 animate-in slide-in-from-bottom-6 duration-500">
@@ -713,32 +720,39 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
         <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat}</button>
       ))}
     </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-      {works.map(work => (
-        <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
-          <div className="aspect-[4/5] bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950">
-            <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
-            <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">{work.type}</div>
-            {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
-          </div>
-          <div className="px-3 pb-4 flex-1 flex flex-col">
-            <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
-            <div className="space-y-1 mb-4">
-              {work.type === 'review' && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
-              {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
-              {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
-              {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {works.map(work => {
+        const isLandscape = (work.type === 'review' || work.type === 'audiobook') && (
+          (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
+          (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
+        );
+        
+        return (
+          <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
+            <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
+              <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
+              <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">{work.type}</div>
+              {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
             </div>
-            <div className="mt-auto">
-              {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
-                <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
-                  {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
-                </a>
-              )}
+            <div className="px-3 pb-4 flex-1 flex flex-col">
+              <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
+              <div className="space-y-1 mb-4">
+                {work.type === 'review' && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
+                {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
+                {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
+                {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
+              </div>
+              <div className="mt-auto">
+                {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
+                  <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
+                    {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 );
