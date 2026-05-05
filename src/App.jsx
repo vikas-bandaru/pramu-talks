@@ -2,18 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import { initializeApp } from 'firebase/app';
-import { 
+import {
   getFirestore, collection, addDoc, onSnapshot, setDoc, getDocs,
   doc, deleteDoc, updateDoc, query, orderBy, initializeFirestore, writeBatch
 } from 'firebase/firestore';
-import { 
-  getStorage, ref, uploadBytes, getDownloadURL 
+import {
+  getStorage, ref, uploadBytes, getDownloadURL
 } from 'firebase/storage';
-import { 
-  getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged 
+import {
+  getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged
 } from 'firebase/auth';
-import { 
-  Book, Mic2, Search, Home, Award, 
+import {
+  Book, Mic2, Search, Home, Award,
   PlayCircle, Menu, X, ChevronRight, ChevronLeft, Plus,
   Database, Library, Settings, Trash2,
   BookOpen, Newspaper, Film, PenTool, Lock, Key, Star, Loader2,
@@ -65,17 +65,18 @@ const storage = getStorage(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'pramu-talks-v2';
 
 const DEFAULT_HOME_CONTENT = {
-  heroTitle: "Poetry in **Journalism.** Truth in Verse.",
-  heroSubtitle: "Bridging the gap between the revolutionary literature of Sri Sri and the dynamic world of digital media.",
-  heroBadge: "Nandi Awardee 2024",
+  heroTitle: "Poetry & **Journalism.** Truth in Words.",
+  heroSubtitle: "Bridging the gap between the progressive literature and the dynamic world of digital media.",
+  heroBadge: "Nandi Awardee 2008",
   philosophyTitle: "Core Philosophy",
   philosophyQuote: "Literature is not just words on a page; it is the heartbeat of society.",
   philosophyText: "Dr. Murthy's philosophy centers on 'Sahitya-Samaja'—the inevitable bond between art and social responsibility. Masterfully bridging classroom pedagogy with digital ethics.",
   philosophyAccent: "శ్రమయే జీవన సౌందర్యము",
-  rootsEducation: "- **Ph.D in Telugu Literature** from Andhra University\n- **MA Telugu & MA English**\n- Specialized research on modern poetry (1940s-60s) and the impact of Sri Sri's Mahaprasthanam",
-  rootsLiterature: "Published numerous research papers and books on modern Telugu literature. Active contributor to literary journals and literary criticism.",
+  rootsEducation: "- **Ph.D in Telugu Literature** from Andhra University\n- **MA Telugu & MA English**\n- Specialized research on modern prose poetry and Ph.D thesis on **Oka Satabdaanni Kudipesina Dalita Kavitvam** in Telugu Literature.",
+  rootsLiterature: "Published numerous poetry collections, essays, articles, translations, short story collections, and book forewords in modern Telugu literature. Active contributor to literary journals and literary criticism.",
   rootsExperience: "- YouTube: Founder of Pramu Talks channel (3+ years, 83.7K+ subscribers)\n- Digital Media: 20 years in digital journalism and content strategy\n- Print Media: 5 years experience as Senior Sub-editor",
   featuredWorkId: "",
+  watchChannelLink: "https://www.youtube.com/@pramutalks",
   awardsTitle: "Awards & Honors",
   nandiTitle: "Prestigious Nandi Award",
   nandiText: "Recognized for the acclaimed digital documentary series on Revolutionary Poet Sri Sri. Celebrated for historical depth and narrative excellence.",
@@ -111,16 +112,16 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
           <div className="max-w-4xl">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
             <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tight uppercase">
-              <ReactMarkdown components={{ p: ({node, ...props}) => <React.Fragment {...props}/>, strong: ({node, ...props}) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
+              <ReactMarkdown components={{ p: ({ node, ...props }) => <React.Fragment {...props} />, strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
             </h1>
             <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
             <div className="flex flex-wrap gap-5">
-              <button onClick={() => window.open('https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
+              <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
               <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95">The Archive</button>
             </div>
           </div>
         </div>
-        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" alt=""/>}
+        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" alt="" />}
         <div className="absolute -bottom-48 -right-48 w-[800px] h-[800px] bg-red-600/5 blur-[120px] rounded-full" />
       </section>
 
@@ -151,26 +152,26 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
             {[
-              { 
-                id: 'edu', 
-                icon: GraduationCap, 
-                title: 'Academic Excellence', 
-                desc: 'Doctoral research and university-level scholarly background.', 
+              {
+                id: 'edu',
+                icon: GraduationCap,
+                title: 'Academic Excellence',
+                desc: 'Doctoral research and university-level scholarly background.',
                 content: data.rootsEducation,
                 featured: works.find(w => w.id === data.featuredWorkId)
               },
-              { 
-                id: 'media', 
-                icon: History, 
-                title: 'Media Evolution', 
-                desc: 'Two decades of leadership in digital and print journalism.', 
-                content: data.rootsExperience 
+              {
+                id: 'media',
+                icon: History,
+                title: 'Media Evolution',
+                desc: 'Two decades of leadership in digital and print journalism.',
+                content: data.rootsExperience
               },
-              { 
-                id: 'lit', 
-                icon: BookOpen, 
-                title: 'Literary Legacy', 
-                desc: 'Authoring and analyzing seminal works in Telugu literature.', 
+              {
+                id: 'lit',
+                icon: BookOpen,
+                title: 'Literary Legacy',
+                desc: 'Authoring and analyzing seminal works in Telugu literature.',
                 content: data.rootsLiterature,
                 stats: works.reduce((acc, w) => {
                   const types = [].concat(w.type);
@@ -182,64 +183,70 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
               const Icon = item.icon;
               const isActive = activeRoot === item.id;
               return (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   onClick={() => setActiveRoot(isActive ? null : item.id)}
                   className={`relative p-8 rounded-[3rem] shadow-sm border transition-all duration-500 cursor-pointer group overflow-hidden ${isActive ? 'bg-slate-900 border-slate-700 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-100 hover:shadow-2xl hover:-translate-y-1 dark:bg-slate-900 dark:border-slate-800'}`}
                 >
                   {/* Decorative Gradient Background for Active State */}
                   {isActive && <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-[80px] rounded-full -mr-20 -mt-20 animate-pulse" />}
-                  
+
                   <div className="relative z-10">
                     <div className={`p-5 rounded-2xl w-fit mb-8 transition-all duration-500 ${isActive ? 'bg-red-600 text-white rotate-6 shadow-lg shadow-red-600/20' : 'bg-slate-50 text-red-600 group-hover:bg-red-600 group-hover:text-white group-hover:scale-110 dark:bg-slate-950 shadow-inner'}`}>
                       <Icon size={36} />
                     </div>
-                    
+
                     <h3 className={`text-2xl font-black mb-4 uppercase tracking-tighter transition-colors ${isActive ? 'text-white' : 'dark:text-white'}`}>{item.title}</h3>
-                    
+
                     {isActive ? (
                       <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="prose prose-sm prose-invert max-w-none">
-                          <ReactMarkdown components={{ 
-                            p: ({node, ...props}) => <p className="text-slate-300 text-base leading-relaxed mb-6" {...props} />,
-                            li: ({node, ...props}) => <li className="text-slate-300 text-sm mb-3 list-disc ml-4 marker:text-red-500" {...props} />
-                          }}>{item.content || 'Details coming soon...'}</ReactMarkdown>
-                          
-                          {item.id === 'edu' && item.featured && (
-                            <div className="mt-8 p-6 bg-white/5 rounded-3xl border border-white/10 flex items-center gap-6 group/item hover:bg-white/10 transition-all active:scale-[0.98]" onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveTab('works');
-                              setSelectedWork(item.featured);
-                            }}>
-                              <div className="relative">
-                                <img src={item.featured.thumbnail} className="w-16 h-20 object-cover rounded-xl shadow-2xl transition-transform group-hover/item:scale-105" alt="" />
-                                <div className="absolute inset-0 rounded-xl shadow-inner pointer-events-none" />
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 mb-1">Featured Publication</p>
-                                <p className="text-white font-black text-lg leading-tight truncate max-w-[240px]">{item.featured.title}</p>
-                                <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">View Archive Entry</p>
-                              </div>
-                              <div className="ml-auto bg-white/10 p-3 rounded-full text-white/50 group-hover/item:text-white group-hover/item:bg-red-600 transition-all">
-                                <ChevronRight size={20} />
-                              </div>
-                            </div>
-                          )}
+                          {(() => {
+                            let liCount = 0;
+                            return (
+                              <ReactMarkdown components={{
+                                p: ({ node, ...props }) => <p className="text-slate-300 text-base leading-relaxed mb-6" {...props} />,
+                                li: ({ node, ...props }) => {
+                                  liCount++;
+                                  const isThirdBullet = liCount === 3 && item.id === 'edu' && item.featured;
+                                  return (
+                                    <li className="text-slate-300 text-sm mb-3 list-disc ml-4 marker:text-red-500" {...props}>
+                                      {props.children}
+                                      {isThirdBullet && (
+                                        <div className="mt-4 p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4 group/item hover:bg-white/10 transition-all cursor-pointer" onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveTab('works');
+                                          setSelectedWork(item.featured);
+                                        }}>
+                                          <img src={item.featured.thumbnail} className="w-10 h-12 object-cover rounded-lg shadow-xl" alt="" />
+                                          <div className="flex-1 min-w-0">
+                                            <p className="text-[8px] font-black uppercase tracking-widest text-red-500 mb-0.5">Featured Work</p>
+                                            <p className="text-white font-black text-xs truncate">{item.featured.title}</p>
+                                          </div>
+                                          <ChevronRight size={14} className="text-white/30" />
+                                        </div>
+                                      )}
+                                    </li>
+                                  );
+                                }
+                              }}>{item.content || 'Details coming soon...'}</ReactMarkdown>
+                            );
+                          })()}
 
                           {item.id === 'lit' && item.stats && (
                             <div className="mt-8 grid grid-cols-2 gap-3">
-                                  {Object.entries(item.stats).filter(([k]) => k !== 'total').map(([type, count]) => {
-                                    const pluralType = type === 'Book' ? 'Books' : 
-                                                     type === 'Review' ? 'Reviews' : 
-                                                     type === 'Essay' ? 'Essays' : 
-                                                     type.endsWith('s') ? type : `${type}s`;
-                                    return (
-                                      <div key={type} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group/stat">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 group-hover/stat:text-red-400 transition-colors">{pluralType}</p>
-                                        <p className="text-white font-black text-2xl">{count}</p>
-                                      </div>
-                                    );
-                                  })}
+                              {Object.entries(item.stats).filter(([k]) => k !== 'total').map(([type, count]) => {
+                                const pluralType = type === 'Book' ? 'Books' :
+                                  type === 'Review' ? 'Reviews' :
+                                    type === 'Essay' ? 'Essays' :
+                                      type.endsWith('s') ? type : `${type}s`;
+                                return (
+                                  <div key={type} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group/stat">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 group-hover/stat:text-red-400 transition-colors">{pluralType}</p>
+                                    <p className="text-white font-black text-2xl">{count}</p>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -247,7 +254,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
                     ) : (
                       <p className="text-slate-500 text-base leading-relaxed dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">{item.desc}</p>
                     )}
-                    
+
                     <div className={`mt-10 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 transition-all ${isActive ? 'text-red-400' : 'text-slate-400 group-hover:text-red-600'}`}>
                       <div className={`w-12 h-[2px] rounded-full transition-all ${isActive ? 'bg-red-600 w-16' : 'bg-slate-200 group-hover:bg-red-600'}`} />
                       {isActive ? 'Minimize' : 'Explore Details'}
@@ -277,22 +284,22 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
                   With over 20 years of leadership in digital and print journalism, Dr. Murty has worked with prominent media outlets, earning widespread acclaim for his insightful commentary. In 2008, his dedication to Telugu heritage was honored with two prestigious <strong>Nandi Awards</strong> for his definitive documentary on the legendary poet <strong>Sri Sri</strong>.
                 </p>
                 <p>
-                  A prolific author, he has published more than 15 poetry collections, a short story book, and a seminal Ph.D. thesis. Beyond his literary achievements, he is a passionate advocate for social justice, secularism, and human rights. Today, through his independent YouTube channel, <strong>"Pramu Talks,"</strong> he continues to inspire audiences by promoting rational thinking and progressive values across India.
+                  A prolific author, he has published 19 poetry collections, a short story book, and a seminal Ph.D. thesis. Beyond his literary achievements, he is a passionate advocate for social justice, secularism, and human rights. Today, through his independent YouTube channel, <strong>"Pramu Talks,"</strong> he continues to inspire audiences by promoting rational thinking and progressive values across India.
                 </p>
               </div>
             </div>
           </div>
           <div className="w-full md:w-80 space-y-6">
-             <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
-                <p className="text-[10px] font-black uppercase tracking-widest text-red-600 mb-4">Quick Facts</p>
-                <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-300">
-                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Born</span> <span className="text-slate-400">Jan 5, 1960</span></li>
-                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Degrees</span> <span className="text-slate-400 text-right">MA, MA, PhD</span></li>
-                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Based In</span> <span className="text-slate-400">Hyderabad</span></li>
-                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Collections</span> <span className="text-slate-400">15+ Books</span></li>
-                  <li className="flex justify-between"><span>YouTube</span> <span className="text-red-500">83K+ Subs</span></li>
-                </ul>
-             </div>
+            <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-600 mb-4">Quick Facts</p>
+              <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-300">
+                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Born</span> <span className="text-slate-400">Jan 5, 1960</span></li>
+                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Degrees</span> <span className="text-slate-400 text-right">MA, MA, PhD</span></li>
+                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Based In</span> <span className="text-slate-400">Hyderabad</span></li>
+                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Collections</span> <span className="text-slate-400">19 Books</span></li>
+                <li className="flex justify-between"><span>YouTube</span> <span className="text-red-500">83K+ Subs</span></li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -318,10 +325,10 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
             </div>
           </div>
           <div className="w-full md:w-96 h-96 bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-12 text-center text-white relative overflow-hidden group">
-             <Award className="w-24 h-24 text-amber-500 mb-6 z-10 transition-transform group-hover:scale-110" />
-             <p className="font-black text-3xl uppercase tracking-tighter z-10 leading-none">Nandi Awardee</p>
-             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3 z-10">Literary Excellence</p>
-             <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
+            <Award className="w-24 h-24 text-amber-500 mb-6 z-10 transition-transform group-hover:scale-110" />
+            <p className="font-black text-3xl uppercase tracking-tighter z-10 leading-none">Nandi Awardee</p>
+            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3 z-10">Literary Excellence</p>
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
           </div>
         </div>
       </section>
@@ -330,24 +337,24 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       <section className="py-24 bg-slate-50 px-4 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-12">
-             <div>
-                <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
-                <p className="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
-             </div>
-             <div className="hidden md:flex gap-2 text-slate-400">
-                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronLeft size={16}/></div>
-                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronRight size={16}/></div>
-             </div>
+            <div>
+              <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
+              <p className="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
+            </div>
+            <div className="hidden md:flex gap-2 text-slate-400">
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronLeft size={16} /></div>
+              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronRight size={16} /></div>
+            </div>
           </div>
-          
+
           <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible">
             {(data.gallery || []).map((item, i) => (
               <div key={i} className="flex-shrink-0 w-[85%] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
                 <img src={item.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.label} />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
                   <div>
-                     <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Moment</p>
-                     <span className="text-white text-lg font-black uppercase tracking-tighter italic">{item.label}</span>
+                    <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Moment</p>
+                    <span className="text-white text-lg font-black uppercase tracking-tighter italic">{item.label}</span>
                   </div>
                 </div>
               </div>
@@ -370,7 +377,7 @@ const App = () => {
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [filter, setFilter] = useState('all');
   const [socialLinks, setSocialLinks] = useState({ youtube: '', twitter: '', facebook: '', instagram: '' });
-  
+
   const [clickCount, setClickCount] = useState(0);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [passkey, setPasskey] = useState('');
@@ -512,7 +519,7 @@ const App = () => {
       });
       clearTimeout(timeoutId);
       const result = await response.json();
-      
+
       if (result.error) {
         if (result.error.code === 429 || result.error.status === 'RESOURCE_EXHAUSTED') {
           setSystemStatus({ type: 'warning', message: 'API limits reached. AI features are in manual mode.' });
@@ -576,19 +583,19 @@ const App = () => {
     }
   };
 
-  const handleMoveWork = () => {}; // No longer used
+  const handleMoveWork = () => { }; // No longer used
 
   const handleLogoClick = () => {
     setActiveTab('home');
     setClickCount(prev => {
       const next = prev + 1;
       if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
-      
+
       if (next >= 3) {
         setShowLoginModal(true);
         return 0;
       }
-      
+
       clickTimerRef.current = setTimeout(() => setClickCount(0), 1000);
       return next;
     });
@@ -641,7 +648,7 @@ const App = () => {
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-red-100 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-500">
       {systemStatus.message && (
         <div className={`fixed top-16 left-0 right-0 z-[60] px-4 py-2 text-center text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top duration-300 ${systemStatus.type === 'error' ? 'bg-red-600 text-white' : 'bg-amber-500 text-slate-900'}`}>
-           <span className="flex items-center justify-center gap-2"><AlertCircle size={12}/> {systemStatus.message}</span>
+          <span className="flex items-center justify-center gap-2"><AlertCircle size={12} /> {systemStatus.message}</span>
         </div>
       )}
       <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 z-50 dark:bg-slate-900/90 dark:border-slate-800">
@@ -687,8 +694,8 @@ const App = () => {
                 { id: 'studio', label: 'Studio', icon: Settings, admin: true },
                 { id: 'research', label: 'Research', icon: Database, admin: true },
               ].filter(item => !item.admin || isAdmin).map(item => (
-                <button 
-                  key={item.id} 
+                <button
+                  key={item.id}
                   onClick={() => { setActiveTab(item.id); setIsMenuOpen(false); }}
                   className={`flex items-center gap-4 w-full p-4 rounded-2xl text-base font-bold transition-all ${activeTab === item.id ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-500' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5'}`}
                 >
@@ -698,8 +705,8 @@ const App = () => {
                 </button>
               ))}
               {isAdmin && (
-                <button 
-                  onClick={() => { handleLogout(); setIsMenuOpen(false); }} 
+                <button
+                  onClick={() => { handleLogout(); setIsMenuOpen(false); }}
                   className="flex items-center gap-4 w-full p-4 rounded-2xl text-slate-400 hover:text-red-600 text-base font-black uppercase tracking-widest transition-all"
                 >
                   <Lock size={20} />
@@ -723,11 +730,11 @@ const App = () => {
               <button type="submit" className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-600 transition-all">Unlock</button>
             </form>
             <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
-               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1"><Fingerprint size={12} /> Admin Identity (UID)</p>
-               <div className="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100 group dark:bg-slate-950 dark:border-slate-800">
-                  <code className="text-[9px] font-bold text-slate-500 truncate w-48">{user?.uid || "Connecting..."}</code>
-                  <button onClick={copyUid} className="p-1.5 hover:bg-white rounded-lg text-slate-400 dark:hover:bg-slate-900">{copiedUid ? <CheckCircle2 size={14} className="text-green-500" /> : <Copy size={14} />}</button>
-               </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1"><Fingerprint size={12} /> Admin Identity (UID)</p>
+              <div className="bg-slate-50 p-3 rounded-xl flex items-center justify-between border border-slate-100 group dark:bg-slate-950 dark:border-slate-800">
+                <code className="text-[9px] font-bold text-slate-500 truncate w-48">{user?.uid || "Connecting..."}</code>
+                <button onClick={copyUid} className="p-1.5 hover:bg-white rounded-lg text-slate-400 dark:hover:bg-slate-900">{copiedUid ? <CheckCircle2 size={14} className="text-green-500" /> : <Copy size={14} />}</button>
+              </div>
             </div>
           </div>
         </div>
@@ -739,11 +746,11 @@ const App = () => {
         {activeTab === 'works' && selectedWork && <WorkDetailView work={selectedWork} onBack={() => setSelectedWork(null)} />}
         {/* {activeTab === 'videos' && <VideosView works={featuredVideos} />} */}
         {activeTab === 'studio' && isAdmin && (
-          <CreatorStudio 
-            onAdd={handleAddWork} 
-            onUpdate={handleUpdateWork} 
-            works={works} 
-            onDelete={handleDelete} 
+          <CreatorStudio
+            onAdd={handleAddWork}
+            onUpdate={handleUpdateWork}
+            works={works}
+            onDelete={handleDelete}
             isVideoLoading={isVideoLoading}
             onSync={fetchTopVideos}
             socialLinks={socialLinks}
@@ -770,7 +777,7 @@ const App = () => {
 const WorkDetailView = ({ work, onBack }) => {
   const workTypes = [].concat(work.type);
   const isLandscapeMedia = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
-    (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
+    (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) ||
     (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
   );
 
@@ -779,7 +786,7 @@ const WorkDetailView = ({ work, onBack }) => {
       <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-red-600 font-black uppercase tracking-widest text-[10px] mb-12 transition-all active:scale-95">
         <ChevronLeft size={16} /> Back to Archive
       </button>
-      
+
       <div className="grid md:grid-cols-2 gap-16 items-start">
         <div className="space-y-8">
           <div className={`${isLandscapeMedia ? 'aspect-video' : 'aspect-[3/4]'} bg-slate-100 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:bg-slate-900 dark:border-slate-800 relative`}>
@@ -788,7 +795,7 @@ const WorkDetailView = ({ work, onBack }) => {
               {[].concat(work.type).join(' / ')}
             </div>
           </div>
-        
+
           {work.rating && workTypes.includes('review') && (
             <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/20">
               <div className="flex items-center gap-4 mb-2">
@@ -808,8 +815,8 @@ const WorkDetailView = ({ work, onBack }) => {
           <div>
             <h2 className="text-5xl font-black text-slate-900 uppercase tracking-tighter leading-[0.9] mb-6 dark:text-white lg:text-6xl">{work.title}</h2>
             <div className="flex flex-wrap gap-4 items-center">
-              {work.pubYear && <div className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Calendar className="inline mr-2" size={12}/> {work.pubYear}</div>}
-              {work.magazine && <div className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest dark:bg-red-900/10 dark:text-red-500"><Newspaper className="inline mr-2" size={12}/> {work.magazine}</div>}
+              {work.pubYear && <div className="px-4 py-2 bg-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Calendar className="inline mr-2" size={12} /> {work.pubYear}</div>}
+              {work.magazine && <div className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest dark:bg-red-900/10 dark:text-red-500"><Newspaper className="inline mr-2" size={12} /> {work.magazine}</div>}
             </div>
           </div>
 
@@ -819,12 +826,12 @@ const WorkDetailView = ({ work, onBack }) => {
           </div>
 
           {work.awards && (
-             <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden group">
-                <Award className="text-amber-500 mb-4 transition-transform group-hover:scale-110" size={32} />
-                <h4 className="font-black uppercase tracking-tighter text-xl mb-2">Recognition</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">{work.awards}</p>
-                <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[40px] rounded-full" />
-             </div>
+            <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white relative overflow-hidden group">
+              <Award className="text-amber-500 mb-4 transition-transform group-hover:scale-110" size={32} />
+              <h4 className="font-black uppercase tracking-tighter text-xl mb-2">Recognition</h4>
+              <p className="text-slate-400 text-sm leading-relaxed">{work.awards}</p>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-600/10 blur-[40px] rounded-full" />
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
@@ -857,13 +864,13 @@ const WorkDetailView = ({ work, onBack }) => {
 
 const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const filteredWorks = works.filter(work => {
     const s = searchTerm.toLowerCase();
-    return work.title.toLowerCase().includes(s) || 
-           (work.pubYear && work.pubYear.toString().includes(s)) ||
-           (work.magazine && work.magazine.toLowerCase().includes(s)) ||
-           (work.type && work.type.toString().toLowerCase().includes(s));
+    return work.title.toLowerCase().includes(s) ||
+      (work.pubYear && work.pubYear.toString().includes(s)) ||
+      (work.magazine && work.magazine.toLowerCase().includes(s)) ||
+      (work.type && work.type.toString().toLowerCase().includes(s));
   });
 
   return (
@@ -874,10 +881,10 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
             <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat}</button>
           ))}
         </div>
-        
+
         <div className="relative w-full md:w-72 group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-600 transition-colors" size={16} />
-          <input 
+          <input
             type="text"
             placeholder="Search by title, year..."
             value={searchTerm}
@@ -891,10 +898,10 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
         {filteredWorks.map(work => {
           const workTypes = [].concat(work.type);
           const isLandscape = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
-            (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
+            (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) ||
             (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
           );
-          
+
           return (
             <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
               <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
@@ -935,35 +942,35 @@ const VideosView = ({ works, isLoading }) => (
       <div>
         <h2 className="text-4xl font-black tracking-tight leading-none uppercase tracking-tighter dark:text-white">Trending Now</h2>
         <div className="flex items-center gap-2 mt-2">
-           <span className="w-2 h-2 rounded-full bg-red-500" />
-           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] dark:text-slate-500">Curated Playlist</p>
+          <span className="w-2 h-2 rounded-full bg-red-500" />
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] dark:text-slate-500">Curated Playlist</p>
         </div>
       </div>
     </div>
-    
+
     {/* Manual Playlist Display */}
 
     <div className="grid md:grid-cols-3 gap-8 mb-16">
-        {works.map((video, idx) => (
-          <a key={idx} href={video.url} target="_blank" rel="noopener noreferrer" className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition-all dark:bg-slate-900 dark:border-slate-800">
-            <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-950">
-              <img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
-              <div className="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <PlayCircle className="text-white w-12 h-12 drop-shadow-2xl" />
-              </div>
+      {works.map((video, idx) => (
+        <a key={idx} href={video.url} target="_blank" rel="noopener noreferrer" className="group bg-white rounded-[2.5rem] overflow-hidden shadow-sm border border-slate-100 hover:shadow-2xl transition-all dark:bg-slate-900 dark:border-slate-800">
+          <div className="aspect-video relative overflow-hidden bg-slate-100 dark:bg-slate-950">
+            <img src={video.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+            <div className="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <PlayCircle className="text-white w-12 h-12 drop-shadow-2xl" />
             </div>
-            <div className="p-8">
-              <h3 className="font-black text-lg leading-tight line-clamp-2 group-hover:text-red-600 transition-colors uppercase italic dark:text-white">{video.title}</h3>
-            </div>
-          </a>
-        ))}
-      </div>
-      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[3rem] border border-slate-100 text-center space-y-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
-        <Video className="w-12 h-12 text-red-600" />
-        <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Visit the Official Channel</h3>
-        <p className="text-slate-400 font-medium max-w-sm">For the latest updates and full episodes, explore the YouTube hub of Dr. Prasada Murthy.</p>
-        <a href="https://www.youtube.com/@pramutalks" target="_blank" rel="noopener noreferrer" className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-600 transition-all shadow-xl shadow-slate-900/20 active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">Open YouTube Channel</a>
-      </div>
+          </div>
+          <div className="p-8">
+            <h3 className="font-black text-lg leading-tight line-clamp-2 group-hover:text-red-600 transition-colors uppercase italic dark:text-white">{video.title}</h3>
+          </div>
+        </a>
+      ))}
+    </div>
+    <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[3rem] border border-slate-100 text-center space-y-6 shadow-sm dark:bg-slate-900 dark:border-slate-800">
+      <Video className="w-12 h-12 text-red-600" />
+      <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Visit the Official Channel</h3>
+      <p className="text-slate-400 font-medium max-w-sm">For the latest updates and full episodes, explore the YouTube hub of Dr. Prasada Murthy.</p>
+      <a href="https://www.youtube.com/@pramutalks" target="_blank" rel="noopener noreferrer" className="bg-slate-900 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-600 transition-all shadow-xl shadow-slate-900/20 active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">Open YouTube Channel</a>
+    </div>
   </div>
 );
 
@@ -979,17 +986,17 @@ const Footer = ({ socials }) => (
         <div className="flex gap-4">
           {socials.youtube && (
             <a href={socials.youtube} target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl hover:bg-red-600 transition-all text-white group" title="YouTube">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" /></svg>
             </a>
           )}
           {socials.twitter && (
             <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl hover:bg-slate-800 transition-all text-white group" title="X (Twitter)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932 6.064-6.932zm-1.292 19.494h2.039L6.486 3.24H4.298l13.311 17.407z" /></svg>
             </a>
           )}
           {socials.facebook && (
             <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="p-4 bg-white/5 rounded-2xl hover:bg-blue-600 transition-all text-white group" title="Facebook">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" className="opacity-90 group-hover:opacity-100"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
             </a>
           )}
           {socials.instagram && (
@@ -1011,16 +1018,16 @@ const Footer = ({ socials }) => (
   </footer>
 );
 
-const InputField = ({ label, name, placeholder, type="text", value, onChange, id }) => (
+const InputField = ({ label, name, placeholder, type = "text", value, onChange, id }) => (
   <div className="space-y-2">
     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">{label}</label>
     <input id={id} name={name} className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder={placeholder} value={value} onChange={onChange} type={type} />
   </div>
 );
 
-const CreatorStudio = ({ 
-  onAdd, onUpdate, works, onDelete, isVideoLoading, 
-  onSync, socialLinks, homeData, systemConfig, db, 
+const CreatorStudio = ({
+  onAdd, onUpdate, works, onDelete, isVideoLoading,
+  onSync, socialLinks, homeData, systemConfig, db,
   appId, featuredVideos, user, onCopyUid, copiedUid,
   onInitializeSort, onReorder
 }) => {
@@ -1033,8 +1040,8 @@ const CreatorStudio = ({
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
-    title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', 
-    purchaseLink: '', awards: '', link: '', magazine: '', 
+    title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '',
+    purchaseLink: '', awards: '', link: '', magazine: '',
     sourceName: '', availableAt: '', rating: '', youtubeLink: '', bookLink: '',
     pdfUrl: '', audioUrl: ''
   });
@@ -1068,9 +1075,9 @@ const CreatorStudio = ({
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          contents: [{ parts: [{ text: prompt }] }], 
-          tools: [{ "google_search_retrieval": { "dynamic_retrieval_config": { "mode": "MODE_DYNAMIC", "dynamic_threshold": 0.3 } } }] 
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          tools: [{ "google_search_retrieval": { "dynamic_retrieval_config": { "mode": "MODE_DYNAMIC", "dynamic_threshold": 0.3 } } }]
         })
       });
       const result = await response.json();
@@ -1082,18 +1089,18 @@ const CreatorStudio = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsFetching(true);
-    
+
     // Clean data based on type
     const cleanedData = { ...form, type: activeTypes };
     if (!activeTypes.includes('review')) delete cleanedData.rating;
-    
+
     let result;
     if (editingId) {
       result = await onUpdate(editingId, cleanedData);
     } else {
       result = await onAdd(cleanedData);
     }
-    
+
     setIsFetching(false);
     if (result && result.success) {
       setEditingId(null);
@@ -1175,53 +1182,53 @@ const CreatorStudio = ({
 
       {studioTab === 'video' && (
         <div className="bg-white rounded-[3rem] shadow-2xl p-8 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-           {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Playlist Updated</div>}
-           <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Video className="text-red-600" /> Video Manager</h2>
-           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Curate featured videos for the Trending Now section.</p>
-           
-           <div className="space-y-12">
-              <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 shadow-inner">
-                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-8 border-b border-red-600/10 pb-4">New Featured Video</h3>
-                 <div className="grid md:grid-cols-2 gap-8 items-end">
-                    <div className="space-y-6">
-                       <InputField label="Video Title" placeholder="e.g. Revolutionary Poetry Analysis" id="new-video-title" />
-                       <InputField label="YouTube URL" placeholder="https://youtube.com/watch?v=..." id="new-video-url" />
-                    </div>
-                    <button onClick={async () => {
-                       const title = document.getElementById('new-video-title').value;
-                       const url = document.getElementById('new-video-url').value;
-                       if (!title || !url) return;
-                       const thumb = extractYTThumbnail(url);
-                       const newVideo = { id: Date.now().toString(), title, url, thumbnail: thumb || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' };
-                       const updated = [...featuredVideos, newVideo];
-                       await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
-                       document.getElementById('new-video-title').value = '';
-                       document.getElementById('new-video-url').value = '';
-                       setShowSuccess(true);
-                       setTimeout(() => setShowSuccess(false), 3000);
-                    }} className="bg-slate-900 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-600 transition-all flex items-center justify-center gap-3 active:scale-95 shadow-lg">
-                       <Plus size={16} /> Add to Playlist
-                    </button>
-                 </div>
-              </div>
+          {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Playlist Updated</div>}
+          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Video className="text-red-600" /> Video Manager</h2>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Curate featured videos for the Trending Now section.</p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {featuredVideos.map(vid => (
-                    <div key={vid.id} className="group bg-slate-50 rounded-[2.5rem] p-4 border border-slate-100 dark:bg-slate-950 dark:border-slate-800 transition-all hover:shadow-xl">
-                       <div className="aspect-video bg-slate-200 rounded-[1.5rem] overflow-hidden mb-4 relative">
-                          <img src={vid.thumbnail} className="w-full h-full object-cover" />
-                          <button onClick={async () => {
-                             const updated = featuredVideos.filter(v => v.id !== vid.id);
-                             await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
-                          }} className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
-                             <Trash2 size={14} />
-                          </button>
-                       </div>
-                       <h4 className="font-black text-xs uppercase tracking-tighter line-clamp-2 dark:text-white">{vid.title}</h4>
-                    </div>
-                 ))}
+          <div className="space-y-12">
+            <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 shadow-inner">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-8 border-b border-red-600/10 pb-4">New Featured Video</h3>
+              <div className="grid md:grid-cols-2 gap-8 items-end">
+                <div className="space-y-6">
+                  <InputField label="Video Title" placeholder="e.g. Revolutionary Poetry Analysis" id="new-video-title" />
+                  <InputField label="YouTube URL" placeholder="https://youtube.com/watch?v=..." id="new-video-url" />
+                </div>
+                <button onClick={async () => {
+                  const title = document.getElementById('new-video-title').value;
+                  const url = document.getElementById('new-video-url').value;
+                  if (!title || !url) return;
+                  const thumb = extractYTThumbnail(url);
+                  const newVideo = { id: Date.now().toString(), title, url, thumbnail: thumb || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600' };
+                  const updated = [...featuredVideos, newVideo];
+                  await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
+                  document.getElementById('new-video-title').value = '';
+                  document.getElementById('new-video-url').value = '';
+                  setShowSuccess(true);
+                  setTimeout(() => setShowSuccess(false), 3000);
+                }} className="bg-slate-900 text-white h-16 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-600 transition-all flex items-center justify-center gap-3 active:scale-95 shadow-lg">
+                  <Plus size={16} /> Add to Playlist
+                </button>
               </div>
-           </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredVideos.map(vid => (
+                <div key={vid.id} className="group bg-slate-50 rounded-[2.5rem] p-4 border border-slate-100 dark:bg-slate-950 dark:border-slate-800 transition-all hover:shadow-xl">
+                  <div className="aspect-video bg-slate-200 rounded-[1.5rem] overflow-hidden mb-4 relative">
+                    <img src={vid.thumbnail} className="w-full h-full object-cover" />
+                    <button onClick={async () => {
+                      const updated = featuredVideos.filter(v => v.id !== vid.id);
+                      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
+                    }} className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <h4 className="font-black text-xs uppercase tracking-tighter line-clamp-2 dark:text-white">{vid.title}</h4>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
       {studioTab === 'archive' && (
@@ -1230,8 +1237,8 @@ const CreatorStudio = ({
           <div className="flex flex-wrap gap-2 mb-10 items-center justify-between">
             <div className="flex flex-wrap gap-2">
               {types.map(t => (
-                <button 
-                  key={t.id} 
+                <button
+                  key={t.id}
                   type="button"
                   onClick={() => {
                     const current = [...activeTypes];
@@ -1240,7 +1247,7 @@ const CreatorStudio = ({
                     } else {
                       setActiveTypes([...current, t.id]);
                     }
-                  }} 
+                  }}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-widest text-[8px] transition-all ${activeTypes.includes(t.id) ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-400'}`}
                 >
                   <t.icon size={12} /> {t.label}
@@ -1257,18 +1264,18 @@ const CreatorStudio = ({
                     <button type="button" onClick={() => fileInputRef.current.click()} className="p-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase">Upload</button>
                     <button type="button" onClick={fetchMetadataFromLink} disabled={isFetching} className="p-3 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase">Sync</button>
                   </div>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => { 
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
                     const file = e.target.files[0];
                     if (!file) return;
-                    
-                    const reader = new FileReader(); 
+
+                    const reader = new FileReader();
                     reader.onload = (event) => {
                       const img = new Image();
                       img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-                        
+
                         // Limit dimensions to 1200px max
                         const MAX_DIM = 1200;
                         if (width > height) {
@@ -1282,40 +1289,40 @@ const CreatorStudio = ({
                             height = MAX_DIM;
                           }
                         }
-                        
+
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
+
                         // Iteratively compress if needed (target < 800KB)
                         let quality = 0.8;
                         let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        
+
                         // Approx check: base64 string length / 1.33 = bytes
                         while (dataUrl.length > 800000 && quality > 0.1) {
                           quality -= 0.1;
                           dataUrl = canvas.toDataURL('image/jpeg', quality);
                         }
-                        
+
                         if (dataUrl.length > 1000000) {
                           alert("Image is still too large after compression. Please use a smaller image file.");
                         } else {
-                          setForm(f => ({...f, thumbnail: dataUrl}));
+                          setForm(f => ({ ...f, thumbnail: dataUrl }));
                         }
                       };
                       img.src = event.target.result;
-                    }; 
-                    reader.readAsDataURL(file); 
+                    };
+                    reader.readAsDataURL(file);
                   }} />
                 </div>
-                <InputField label="Primary URL (Content Link)" name="link" placeholder="YouTube or Article URL" value={form.link} onChange={e => setForm({...form, link: e.target.value})} />
-                <InputField label="Work Title" name="title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+                <InputField label="Primary URL (Content Link)" name="link" placeholder="YouTube or Article URL" value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} />
+                <InputField label="Work Title" name="title" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
               </div>
               <div className="space-y-6">
                 {activeTypes.includes('book') && <>
-                  <InputField label="Publishing Year" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
-                  <InputField label="Purchase Link" name="purchaseLink" value={form.purchaseLink} onChange={e => setForm({...form, purchaseLink: e.target.value})} />
+                  <InputField label="Publishing Year" name="pubYear" value={form.pubYear} onChange={e => setForm({ ...form, pubYear: e.target.value })} />
+                  <InputField label="Purchase Link" name="purchaseLink" value={form.purchaseLink} onChange={e => setForm({ ...form, purchaseLink: e.target.value })} />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">PDF Upload (Max 10MB)</label>
                     <div className="flex gap-2">
@@ -1326,18 +1333,18 @@ const CreatorStudio = ({
                       {form.pdfUrl && <div className="p-4 bg-green-500/10 text-green-500 rounded-2xl flex items-center px-4"><CheckCircle2 size={14} /></div>}
                     </div>
                   </div>
-                  <InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({...form, awards: e.target.value})} />
+                  <InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({ ...form, awards: e.target.value })} />
                 </>}
-                {(activeTypes.includes('essay') || activeTypes.includes('story')) && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({...form, magazine: e.target.value})} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /></>}
+                {(activeTypes.includes('essay') || activeTypes.includes('story')) && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({ ...form, magazine: e.target.value })} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({ ...form, pubYear: e.target.value })} /></>}
                 {activeTypes.includes('review') && <>
-                  <InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
-                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
-                  <InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} />
-                  <InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} />
+                  <InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({ ...form, sourceName: e.target.value })} />
+                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({ ...form, pubYear: e.target.value })} />
+                  <InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({ ...form, rating: e.target.value })} />
+                  <InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({ ...form, youtubeLink: e.target.value })} />
                 </>}
                 {activeTypes.includes('audiobook') && <>
-                  <InputField label="Narrator / Author" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
-                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
+                  <InputField label="Narrator / Author" name="sourceName" value={form.sourceName} onChange={e => setForm({ ...form, sourceName: e.target.value })} />
+                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({ ...form, pubYear: e.target.value })} />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Audio Upload (Max 20MB)</label>
                     <div className="flex gap-2">
@@ -1349,8 +1356,8 @@ const CreatorStudio = ({
                     </div>
                   </div>
                 </>}
-                <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Summary..." value={form.brief || ''} onChange={e => setForm({...form, brief: e.target.value})} />
-                <InputField label="Manual Thumbnail URL" name="thumbnail" value={form.thumbnail} onChange={e => setForm({...form, thumbnail: e.target.value})} />
+                <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Summary..." value={form.brief || ''} onChange={e => setForm({ ...form, brief: e.target.value })} />
+                <InputField label="Manual Thumbnail URL" name="thumbnail" value={form.thumbnail} onChange={e => setForm({ ...form, thumbnail: e.target.value })} />
               </div>
             </div>
             <div className="flex gap-4">
@@ -1366,169 +1373,164 @@ const CreatorStudio = ({
 
       {studioTab === 'home' && (
         <div className="bg-white rounded-[3rem] shadow-2xl p-8 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-           {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Home Updated</div>}
-           <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Home className="text-red-600" /> Home Editor</h2>
-           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Manage landing page strings and infrequent media links.</p>
-           
-           <form onSubmit={handleHomeSubmit} className="space-y-12">
-              <div className="space-y-8">
-                 <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Hero Section</h3>
-                 <div className="grid md:grid-cols-2 gap-8">
-                    <InputField label="Badge Text" value={homeForm.heroBadge} onChange={e => setHomeForm({...homeForm, heroBadge: e.target.value})} />
-                    <InputField label="Hero Background URL" value={homeForm.heroBgUrl} onChange={e => setHomeForm({...homeForm, heroBgUrl: e.target.value})} />
-                 </div>
-                 <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Hero Headline (Use **text** for Red underline)</label>
-                    <input className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.heroTitle} onChange={e => setHomeForm({...homeForm, heroTitle: e.target.value})} />
-                 </div>
-                 <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Hero Subtitle..." value={homeForm.heroSubtitle} onChange={e => setHomeForm({...homeForm, heroSubtitle: e.target.value})} />
+          {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Home Updated</div>}
+          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Home className="text-red-600" /> Home Editor</h2>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Manage landing page strings and infrequent media links.</p>
+
+          <form onSubmit={handleHomeSubmit} className="space-y-12">
+            <div className="space-y-8">
+              <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Hero Section</h3>
+              <div className="grid md:grid-cols-3 gap-8">
+                <InputField label="Badge Text" value={homeForm.heroBadge} onChange={e => setHomeForm({ ...homeForm, heroBadge: e.target.value })} />
+                <InputField label="Watch Channel Link" value={homeForm.watchChannelLink} onChange={e => setHomeForm({ ...homeForm, watchChannelLink: e.target.value })} />
+                <InputField label="Hero Background URL" value={homeForm.heroBgUrl} onChange={e => setHomeForm({ ...homeForm, heroBgUrl: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Hero Headline (Use **text** for Red underline)</label>
+                <input className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.heroTitle} onChange={e => setHomeForm({ ...homeForm, heroTitle: e.target.value })} />
+              </div>
+              <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Hero Subtitle..." value={homeForm.heroSubtitle} onChange={e => setHomeForm({ ...homeForm, heroSubtitle: e.target.value })} />
+            </div>
+
+            <div className="space-y-8">
+              <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Philosophy & Moments</h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <InputField label="Philosophy Title" value={homeForm.philosophyTitle} onChange={e => setHomeForm({ ...homeForm, philosophyTitle: e.target.value })} />
+                <InputField label="Philosophy Accent (Telugu)" value={homeForm.philosophyAccent} onChange={e => setHomeForm({ ...homeForm, philosophyAccent: e.target.value })} />
+              </div>
+              <InputField label="Philosophy Quote" value={homeForm.philosophyQuote} onChange={e => setHomeForm({ ...homeForm, philosophyQuote: e.target.value })} />
+              <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Philosophy details..." value={homeForm.philosophyText} onChange={e => setHomeForm({ ...homeForm, philosophyText: e.target.value })} />
+
+              <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Academic Roots</h3>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Education Background (Markdown)</label>
+                  <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsEducation || ''} onChange={e => setHomeForm({ ...homeForm, rootsEducation: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Literature Experience (Markdown)</label>
+                  <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsLiterature || ''} onChange={e => setHomeForm({ ...homeForm, rootsLiterature: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Media Experience (Markdown)</label>
+                  <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsExperience || ''} onChange={e => setHomeForm({ ...homeForm, rootsExperience: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Featured Work (Education Link)</label>
+                  <select className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.featuredWorkId || ''} onChange={e => setHomeForm({ ...homeForm, featuredWorkId: e.target.value })}>
+                    <option value="">Select a work to link...</option>
+                    {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+                  </select>
+                </div>
               </div>
 
-              <div className="space-y-8">
-                 <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Philosophy & Moments</h3>
-                 <div className="grid md:grid-cols-2 gap-8">
-                    <InputField label="Philosophy Title" value={homeForm.philosophyTitle} onChange={e => setHomeForm({...homeForm, philosophyTitle: e.target.value})} />
-                    <InputField label="Philosophy Accent (Telugu)" value={homeForm.philosophyAccent} onChange={e => setHomeForm({...homeForm, philosophyAccent: e.target.value})} />
-                 </div>
-                 <InputField label="Philosophy Quote" value={homeForm.philosophyQuote} onChange={e => setHomeForm({...homeForm, philosophyQuote: e.target.value})} />
-                 <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Philosophy details..." value={homeForm.philosophyText} onChange={e => setHomeForm({...homeForm, philosophyText: e.target.value})} />
 
-                  <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Academic Roots</h3>
-                  <div className="space-y-6">
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Education Background (Markdown)</label>
-                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsEducation || ''} onChange={e => setHomeForm({...homeForm, rootsEducation: e.target.value})} />
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Literature Experience (Markdown)</label>
-                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsLiterature || ''} onChange={e => setHomeForm({...homeForm, rootsLiterature: e.target.value})} />
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Media Experience (Markdown)</label>
-                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsExperience || ''} onChange={e => setHomeForm({...homeForm, rootsExperience: e.target.value})} />
-                     </div>
-                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Featured Work (Education Link)</label>
-                        <select className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.featuredWorkId || ''} onChange={e => setHomeForm({...homeForm, featuredWorkId: e.target.value})}>
-                          <option value="">Select a work to link...</option>
-                          {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
-                        </select>
-                     </div>
-                  </div>
+            </div>
 
-                 
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4">
-                    <InputField label="Gallery 1 (Studio)" value={homeForm.gallery1} onChange={e => setHomeForm({...homeForm, gallery1: e.target.value})} />
-                    <InputField label="Gallery 2 (Literature)" value={homeForm.gallery2} onChange={e => setHomeForm({...homeForm, gallery2: e.target.value})} />
-                    <InputField label="Gallery 3 (Teaching)" value={homeForm.gallery3} onChange={e => setHomeForm({...homeForm, gallery3: e.target.value})} />
-                    <InputField label="Gallery 4 (Archive)" value={homeForm.gallery4} onChange={e => setHomeForm({...homeForm, gallery4: e.target.value})} />
-                 </div>
+            <div className="space-y-8">
+              <div className="flex justify-between items-end pb-2 border-b border-red-600/10">
+                <h3 className="text-xs font-black uppercase tracking-widest text-red-600">Media Moments Gallery</h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{homeForm.gallery?.length || 0} Moments</p>
               </div>
 
-              <div className="space-y-8">
-                 <div className="flex justify-between items-end pb-2 border-b border-red-600/10">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-red-600">Media Moments Gallery</h3>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{homeForm.gallery?.length || 0} Moments</p>
-                 </div>
-                 
-                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {(homeForm.gallery || []).map((moment, idx) => (
-                       <div key={idx} className="group relative aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
-                          <img src={moment.url} className="w-full h-full object-cover" alt="" />
-                          <div className="absolute inset-x-0 bottom-0 bg-slate-900/80 p-2 backdrop-blur-sm">
-                             <p className="text-[8px] text-white font-bold truncate uppercase">{moment.label}</p>
-                          </div>
-                          <button type="button" onClick={() => {
-                             const next = [...homeForm.gallery];
-                             next.splice(idx, 1);
-                             setHomeForm({...homeForm, gallery: next});
-                          }} className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
-                       </div>
-                    ))}
-                    
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {(homeForm.gallery || []).map((moment, idx) => (
+                  <div key={idx} className="group relative aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+                    <img src={moment.url} className="w-full h-full object-cover" alt="" />
+                    <div className="absolute inset-x-0 bottom-0 bg-slate-900/80 p-2 backdrop-blur-sm">
+                      <p className="text-[8px] text-white font-bold truncate uppercase">{moment.label}</p>
+                    </div>
                     <button type="button" onClick={() => {
-                       const input = document.createElement('input');
-                       input.type = 'file';
-                       input.accept = 'image/*';
-                       input.onchange = (e) => {
-                          const file = e.target.files[0];
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                             const img = new Image();
-                             img.onload = () => {
-                                const canvas = document.createElement('canvas');
-                                const MAX_WIDTH = 1000;
-                                let width = img.width;
-                                let height = img.height;
-                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                                canvas.width = width; canvas.height = height;
-                                const ctx = canvas.getContext('2d');
-                                ctx.drawImage(img, 0, 0, width, height);
-                                const compressed = canvas.toDataURL('image/jpeg', 0.8);
-                                const label = prompt("Enter a label for this moment (e.g. Studio, Event):") || "Media Moment";
-                                setHomeForm(prev => ({...prev, gallery: [...(prev.gallery || []), { url: compressed, label }] }));
-                             };
-                             img.src = event.target.result;
-                          };
-                          reader.readAsDataURL(file);
-                       };
-                       input.click();
-                    }} className="aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 hover:border-red-600 hover:text-red-600 transition-all cursor-pointer dark:border-slate-800">
-                       <Plus size={24} />
-                       <span className="text-[8px] font-black uppercase mt-2">Add Moment</span>
-                    </button>
-                 </div>
-              </div>
+                      const next = [...homeForm.gallery];
+                      next.splice(idx, 1);
+                      setHomeForm({ ...homeForm, gallery: next });
+                    }} className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+                  </div>
+                ))}
 
-              <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Save Home Changes</button>
-           </form>
+                <button type="button" onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      const img = new Image();
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1000;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                        const label = prompt("Enter a label for this moment (e.g. Studio, Event):") || "Media Moment";
+                        setHomeForm(prev => ({ ...prev, gallery: [...(prev.gallery || []), { url: compressed, label }] }));
+                      };
+                      img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                  };
+                  input.click();
+                }} className="aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 hover:border-red-600 hover:text-red-600 transition-all cursor-pointer dark:border-slate-800">
+                  <Plus size={24} />
+                  <span className="text-[8px] font-black uppercase mt-2">Add Moment</span>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Save Home Changes</button>
+          </form>
         </div>
       )}
 
       {studioTab === 'system' && (
         <div className="bg-white rounded-[3rem] shadow-2xl p-8 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
-           {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">System Config Saved</div>}
-           <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Settings className="text-red-600" /> System Settings</h2>
-           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Advanced Developer Controls for API and Security.</p>
+          {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">System Config Saved</div>}
+          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Settings className="text-red-600" /> System Settings</h2>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Advanced Developer Controls for API and Security.</p>
 
-           <form onSubmit={handleSystemSubmit} className="space-y-12">
-              <div className="bg-red-50 p-8 rounded-[2rem] border border-red-100 space-y-4 dark:bg-red-900/10 dark:border-red-900/20">
-                 <div className="flex items-center gap-3 text-red-600 font-black uppercase tracking-widest text-[10px]"><Zap size={16}/> Gemini API Overrides</div>
-                 <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Entering a key here will override the `VITE_GEMINI_API_KEY` defined in the build environment. This persists across all your devices.</p>
-                 <InputField label="Gemini API Key" placeholder="Paste key here..." value={systemForm.geminiApiKey} onChange={e => setSystemForm({...systemForm, geminiApiKey: e.target.value})} />
-               </div>
+          <form onSubmit={handleSystemSubmit} className="space-y-12">
+            <div className="bg-red-50 p-8 rounded-[2rem] border border-red-100 space-y-4 dark:bg-red-900/10 dark:border-red-900/20">
+              <div className="flex items-center gap-3 text-red-600 font-black uppercase tracking-widest text-[10px]"><Zap size={16} /> Gemini API Overrides</div>
+              <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Entering a key here will override the `VITE_GEMINI_API_KEY` defined in the build environment. This persists across all your devices.</p>
+              <InputField label="Gemini API Key" placeholder="Paste key here..." value={systemForm.geminiApiKey} onChange={e => setSystemForm({ ...systemForm, geminiApiKey: e.target.value })} />
+            </div>
 
-               <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 space-y-6 dark:bg-slate-950 dark:border-slate-800">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">Content Synchronization</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">Manually trigger a sync with external platforms.</p>
-                  </div>
-                  <button type="button" onClick={() => onSync()} disabled={isVideoLoading} className="flex items-center gap-2 px-6 py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20">
-                    {isVideoLoading ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
-                    {isVideoLoading ? 'Syncing...' : 'Refresh YouTube Feed'}
-                  </button>
+            <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-200 space-y-6 dark:bg-slate-950 dark:border-slate-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">Content Synchronization</h3>
+                  <p className="text-[10px] text-slate-500 mt-1">Manually trigger a sync with external platforms.</p>
                 </div>
+                <button type="button" onClick={() => onSync()} disabled={isVideoLoading} className="flex items-center gap-2 px-6 py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg shadow-red-600/20">
+                  {isVideoLoading ? <Loader2 size={12} className="animate-spin" /> : <Zap size={12} />}
+                  {isVideoLoading ? 'Syncing...' : 'Refresh YouTube Feed'}
+                </button>
               </div>
+            </div>
 
-              <div className="bg-slate-900 p-8 rounded-[2rem] border border-slate-800 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2"><Fingerprint className="text-red-600" size={14}/> Security & Identity</h3>
-                    <p className="text-[10px] text-slate-400 mt-1">Use this UID to whitelist your device in Firebase Security Rules.</p>
-                  </div>
-                  <button type="button" onClick={onCopyUid} disabled={!user?.uid} className="flex items-center gap-2 px-6 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition-all border border-white/5 disabled:opacity-50">
-                    <Copy size={12} /> {copiedUid ? 'Copied!' : 'Copy Device UID'}
-                  </button>
+            <div className="bg-slate-900 p-8 rounded-[2rem] border border-slate-800 space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2"><Fingerprint className="text-red-600" size={14} /> Security & Identity</h3>
+                  <p className="text-[10px] text-slate-400 mt-1">Use this UID to whitelist your device in Firebase Security Rules.</p>
                 </div>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
-                   <code className="text-[10px] text-red-400 font-mono break-all">{user?.uid || 'Initializing Secure Session...'}</code>
-                   {!user?.uid && <Loader2 size={12} className="text-red-600 animate-spin" />}
-                </div>
+                <button type="button" onClick={onCopyUid} disabled={!user?.uid} className="flex items-center gap-2 px-6 py-4 bg-white/10 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white/20 transition-all border border-white/5 disabled:opacity-50">
+                  <Copy size={12} /> {copiedUid ? 'Copied!' : 'Copy Device UID'}
+                </button>
               </div>
-              
-              <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Apply System Config</button>
-           </form>
+              <div className="p-4 bg-white/5 rounded-xl border border-white/5 flex justify-between items-center">
+                <code className="text-[10px] text-red-400 font-mono break-all">{user?.uid || 'Initializing Secure Session...'}</code>
+                {!user?.uid && <Loader2 size={12} className="text-red-600 animate-spin" />}
+              </div>
+            </div>
+
+            <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Apply System Config</button>
+          </form>
         </div>
       )}
 
@@ -1578,113 +1580,113 @@ const CreatorStudio = ({
       {studioTab !== 'home' && studioTab !== 'system' && (
         <div className="bg-white rounded-[3rem] shadow-xl border border-slate-100 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           <div className="p-8 bg-slate-50/5 flex justify-between items-center border-b border-slate-50 dark:bg-slate-950/50 dark:border-slate-800">
-             <div className="flex flex-col">
-                <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Live Manager</h3>
-                <div className="flex items-center gap-3 mt-1">
-                  <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest">Managing {studioTab === 'video' ? 'Videos' : 'Archive Entries'}</p>
-                  {studioTab !== 'video' && (
-                    <button 
-                      onClick={onInitializeSort}
-                      className="text-[8px] bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-0.5 rounded-lg font-black uppercase tracking-tighter"
-                      title="Run this if works are missing from the list"
-                    >
-                      Fix Sort Order
-                    </button>
-                  )}
-                </div>
-             </div>
+            <div className="flex flex-col">
+              <h3 className="text-2xl font-black uppercase tracking-tighter dark:text-white">Live Manager</h3>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest">Managing {studioTab === 'video' ? 'Videos' : 'Archive Entries'}</p>
+                {studioTab !== 'video' && (
+                  <button
+                    onClick={onInitializeSort}
+                    className="text-[8px] bg-slate-100 hover:bg-slate-200 text-slate-500 px-2 py-0.5 rounded-lg font-black uppercase tracking-tighter"
+                    title="Run this if works are missing from the list"
+                  >
+                    Fix Sort Order
+                  </button>
+                )}
+              </div>
+            </div>
             <input value={managerSearch} onChange={e => setManagerSearch(e.target.value)} placeholder="Filter entries..." className="pl-6 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none dark:bg-slate-950 dark:border-slate-700 dark:text-white" />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                 {(studioTab === 'video' ? featuredVideos : works).filter(w => (studioTab === 'video' ? w.title : w.title)?.toLowerCase().includes(managerSearch.toLowerCase())).map((work, idx) => (
-                <tr 
-                  key={work.id} 
-                  draggable={studioTab !== 'video'}
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', idx);
-                    e.currentTarget.classList.add('opacity-40');
-                  }}
-                  onDragEnd={(e) => {
-                    e.currentTarget.classList.remove('opacity-40');
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    if (studioTab !== 'video') e.currentTarget.classList.add('bg-red-50', 'dark:bg-red-900/10');
-                  }}
-                  onDragLeave={(e) => {
-                    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
-                    if (studioTab === 'video') return;
-                    
-                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                    const toIdx = idx;
-                    
-                    if (fromIdx === toIdx) return;
-                    
-                    const newWorks = [...works];
-                    const [movedItem] = newWorks.splice(fromIdx, 1);
-                    newWorks.splice(toIdx, 0, movedItem);
-                    onReorder(newWorks);
-                  }}
-                  className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-grab active:cursor-grabbing ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
-                >
-                  <td className="px-8 py-4 flex items-center gap-3">
-                    {studioTab !== 'video' && (
-                      <div className="mr-2 text-slate-300">
-                        <MoveVertical size={14} />
-                      </div>
-                    )}
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden dark:bg-slate-800">
-                      <img src={work.thumbnail} className="w-full h-full object-cover" />
-                    </div>
-                    <span className="font-bold text-sm line-clamp-1 dark:text-white">{work.title}</span>
-                  </td>
-                  <td className="px-8 py-4">
-                    <div className="flex flex-wrap gap-1">
-                      {studioTab === 'video' ? (
-                        <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">VIDEO CONTENT</span>
-                      ) : (
-                        [].concat(work.type).map(t => (
-                          <span key={t} className="px-2 py-1 bg-red-100 text-red-600 text-[9px] font-black uppercase rounded dark:bg-red-900/20 dark:text-red-400">{t}</span>
-                        ))
+                  <tr
+                    key={work.id}
+                    draggable={studioTab !== 'video'}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', idx);
+                      e.currentTarget.classList.add('opacity-40');
+                    }}
+                    onDragEnd={(e) => {
+                      e.currentTarget.classList.remove('opacity-40');
+                    }}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      if (studioTab !== 'video') e.currentTarget.classList.add('bg-red-50', 'dark:bg-red-900/10');
+                    }}
+                    onDragLeave={(e) => {
+                      e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10');
+                      if (studioTab === 'video') return;
+
+                      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                      const toIdx = idx;
+
+                      if (fromIdx === toIdx) return;
+
+                      const newWorks = [...works];
+                      const [movedItem] = newWorks.splice(fromIdx, 1);
+                      newWorks.splice(toIdx, 0, movedItem);
+                      onReorder(newWorks);
+                    }}
+                    className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-grab active:cursor-grabbing ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                  >
+                    <td className="px-8 py-4 flex items-center gap-3">
+                      {studioTab !== 'video' && (
+                        <div className="mr-2 text-slate-300">
+                          <MoveVertical size={14} />
+                        </div>
                       )}
-                    </div>
-                  </td>
-                  <td className="px-8 py-4 hidden md:table-cell">
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                      {work.pubYear || '—'}
-                    </span>
-                  </td>
-                  <td className="px-8 py-4 text-right">
-                    {studioTab !== 'video' && (
-                      <button onClick={() => { 
-                        setEditingId(work.id); 
-                        setActiveTypes([].concat(work.type)); 
-                        setForm({...work}); 
-                        window.scrollTo({top:0, behavior:'smooth'}); 
-                      }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all">
-                        <Edit3 size={16} />
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden dark:bg-slate-800">
+                        <img src={work.thumbnail} className="w-full h-full object-cover" />
+                      </div>
+                      <span className="font-bold text-sm line-clamp-1 dark:text-white">{work.title}</span>
+                    </td>
+                    <td className="px-8 py-4">
+                      <div className="flex flex-wrap gap-1">
+                        {studioTab === 'video' ? (
+                          <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">VIDEO CONTENT</span>
+                        ) : (
+                          [].concat(work.type).map(t => (
+                            <span key={t} className="px-2 py-1 bg-red-100 text-red-600 text-[9px] font-black uppercase rounded dark:bg-red-900/20 dark:text-red-400">{t}</span>
+                          ))
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-8 py-4 hidden md:table-cell">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        {work.pubYear || '—'}
+                      </span>
+                    </td>
+                    <td className="px-8 py-4 text-right">
+                      {studioTab !== 'video' && (
+                        <button onClick={() => {
+                          setEditingId(work.id);
+                          setActiveTypes([].concat(work.type));
+                          setForm({ ...work });
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all">
+                          <Edit3 size={16} />
+                        </button>
+                      )}
+                      <button onClick={async () => {
+                        if (studioTab === 'video') {
+                          const updated = featuredVideos.filter(v => v.id !== work.id);
+                          await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
+                        } else {
+                          onDelete(work.id);
+                        }
+                      }} className="p-2 text-slate-300 hover:text-red-600 transition-all">
+                        <Trash2 size={16} />
                       </button>
-                    )}
-                    <button onClick={async () => {
-                      if (studioTab === 'video') {
-                        const updated = featuredVideos.filter(v => v.id !== work.id);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'featured_videos'), { videos: updated });
-                      } else {
-                        onDelete(work.id);
-                      }
-                    }} className="p-2 text-slate-300 hover:text-red-600 transition-all">
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody></table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody></table>
           </div>
         </div>
       )}
@@ -1735,7 +1737,7 @@ const ResearchLab = ({ apiKey }) => {
         });
         setRequestLog(prev => [...prev, Date.now()]);
         const result = await response.json();
-        
+
         if (result.error && (result.error.code === 429 || result.error.status === 'RESOURCE_EXHAUSTED')) {
           setChat([...history, { role: 'ai', text: "Namaste. I'm currently reflecting on your recent queries to stay within my processing limits. Please wait about 60 seconds before our next analysis." }]);
           setIsCooldown(true);
@@ -1755,17 +1757,17 @@ const ResearchLab = ({ apiKey }) => {
       <div className="bg-slate-900 rounded-[3rem] p-10 flex-1 flex flex-col shadow-2xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 pb-6 border-b border-white/10 text-white gap-4">
           <div className="flex items-center gap-4">
-            <Database className="text-red-600" /> 
+            <Database className="text-red-600" />
             <div>
-               <h2 className="font-black text-xl uppercase tracking-tighter">Research Intelligence</h2>
-               <div className={`mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${getRiskLevel().bg} border border-white/5`}>
-                  <div className={`w-1 h-1 rounded-full animate-pulse ${getRiskLevel().color.replace('text-', 'bg-')}`} />
-                  <span className={`text-[8px] font-black uppercase tracking-widest ${getRiskLevel().color}`}>Quota: {getRiskLevel().label}</span>
-               </div>
+              <h2 className="font-black text-xl uppercase tracking-tighter">Research Intelligence</h2>
+              <div className={`mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${getRiskLevel().bg} border border-white/5`}>
+                <div className={`w-1 h-1 rounded-full animate-pulse ${getRiskLevel().color.replace('text-', 'bg-')}`} />
+                <span className={`text-[8px] font-black uppercase tracking-widest ${getRiskLevel().color}`}>Quota: {getRiskLevel().label}</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl px-4 border border-white/10">
-            <div className={`flex items-center gap-2 text-[10px] font-black uppercase ${useOllama ? 'text-amber-500' : 'text-blue-500'}`}>{useOllama ? <Cpu size={14}/> : <Globe size={14}/>} {useOllama ? 'Ollama' : 'Gemini'}</div>
+            <div className={`flex items-center gap-2 text-[10px] font-black uppercase ${useOllama ? 'text-amber-500' : 'text-blue-500'}`}>{useOllama ? <Cpu size={14} /> : <Globe size={14} />} {useOllama ? 'Ollama' : 'Gemini'}</div>
             <button onClick={() => setUseOllama(!useOllama)} className={`w-10 h-5 rounded-full relative transition-all ${useOllama ? 'bg-amber-600' : 'bg-slate-700'}`}><div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${useOllama ? 'left-6' : 'left-1'}`} /></button>
           </div>
         </div>
@@ -1776,16 +1778,16 @@ const ResearchLab = ({ apiKey }) => {
                 {m.role === 'ai' ? (
                   <div className="markdown-content space-y-3">
                     <ReactMarkdown components={{
-                      h1: ({node, ...props}) => <h1 className="text-xl font-black uppercase tracking-tight text-white mb-4" {...props} />,
-                      h2: ({node, ...props}) => <h2 className="text-lg font-black uppercase tracking-tight text-white mb-3" {...props} />,
-                      h3: ({node, ...props}) => <h3 className="text-md font-bold text-red-500 mb-2" {...props} />,
-                      p: ({node, ...props}) => <p className="leading-relaxed opacity-90" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1 ml-4" {...props} />,
-                      ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1 ml-4" {...props} />,
-                      li: ({node, ...props}) => <li className="marker:text-red-500" {...props} />,
-                      strong: ({node, ...props}) => <strong className="font-black text-red-500" {...props} />,
-                      a: ({node, ...props}) => <a className="text-red-500 font-bold underline decoration-red-500/30 hover:decoration-red-500 underline-offset-4 transition-all" target="_blank" rel="noopener noreferrer" {...props} />,
-                      code: ({node, ...props}) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono" {...props} />
+                      h1: ({ node, ...props }) => <h1 className="text-xl font-black uppercase tracking-tight text-white mb-4" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="text-lg font-black uppercase tracking-tight text-white mb-3" {...props} />,
+                      h3: ({ node, ...props }) => <h3 className="text-md font-bold text-red-500 mb-2" {...props} />,
+                      p: ({ node, ...props }) => <p className="leading-relaxed opacity-90" {...props} />,
+                      ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-1 ml-4" {...props} />,
+                      ol: ({ node, ...props }) => <ol className="list-decimal list-inside space-y-1 ml-4" {...props} />,
+                      li: ({ node, ...props }) => <li className="marker:text-red-500" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="font-black text-red-500" {...props} />,
+                      a: ({ node, ...props }) => <a className="text-red-500 font-bold underline decoration-red-500/30 hover:decoration-red-500 underline-offset-4 transition-all" target="_blank" rel="noopener noreferrer" {...props} />,
+                      code: ({ node, ...props }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono" {...props} />
                     }}>{m.text}</ReactMarkdown>
                   </div>
                 ) : (
@@ -1796,17 +1798,17 @@ const ResearchLab = ({ apiKey }) => {
           ))}
         </div>
         <div className="relative group">
-           <div className="absolute -top-6 left-2 flex items-center gap-2 opacity-60 group-focus-within:opacity-100 transition-opacity">
-              <Zap size={10} className="text-amber-500" />
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Smart Efficiency Mode Active • Concise Summaries Forced</span>
-           </div>
-           <div className="flex gap-4">
-              <input className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 text-white text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all font-medium disabled:opacity-50" placeholder={isCooldown ? "Cooling down..." : "Query archives..."} value={prompt} onChange={e => setPrompt(e.target.value)} onKeyPress={e => e.key === 'Enter' && ask()} disabled={isCooldown} />
-              <button onClick={ask} disabled={isCooldown} className="bg-white text-slate-900 px-10 rounded-2xl font-black text-[10px] hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest disabled:opacity-50">
-                {isCooldown ? <Loader2 size={12} className="animate-spin inline mr-2"/> : null}
-                {isCooldown ? 'Cooldown' : 'Execute'}
-              </button>
-           </div>
+          <div className="absolute -top-6 left-2 flex items-center gap-2 opacity-60 group-focus-within:opacity-100 transition-opacity">
+            <Zap size={10} className="text-amber-500" />
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400">Smart Efficiency Mode Active • Concise Summaries Forced</span>
+          </div>
+          <div className="flex gap-4">
+            <input className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 text-white text-sm outline-none focus:ring-2 focus:ring-red-600 transition-all font-medium disabled:opacity-50" placeholder={isCooldown ? "Cooling down..." : "Query archives..."} value={prompt} onChange={e => setPrompt(e.target.value)} onKeyPress={e => e.key === 'Enter' && ask()} disabled={isCooldown} />
+            <button onClick={ask} disabled={isCooldown} className="bg-white text-slate-900 px-10 rounded-2xl font-black text-[10px] hover:bg-red-600 hover:text-white transition-all uppercase tracking-widest disabled:opacity-50">
+              {isCooldown ? <Loader2 size={12} className="animate-spin inline mr-2" /> : null}
+              {isCooldown ? 'Cooldown' : 'Execute'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
