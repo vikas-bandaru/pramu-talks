@@ -96,17 +96,13 @@ const FALLBACK_VIDEOS = [
   { id: 'v3', title: 'Journalism Ethics in the Digital Era', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600', url: 'https://www.youtube.com/@pramutalks' }
 ];
 
-const INITIAL_SAMPLES = [
-  { id: 's1', title: 'The Evolution of Sri Sri', type: 'essay', category: 'Articles', thumbnail: 'https://images.unsplash.com/photo-1455391727132-f3cf7339e38c?w=400', magazine: 'Andhra Jyothi', pubYear: '2023', link: '#' },
-  { id: 's2', title: 'Mahaprasthanam Revisited', type: 'book', category: 'Novel', thumbnail: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400', pubYear: '2021', purchaseLink: '#' }
-];
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [works, setWorks] = useState(INITIAL_SAMPLES);
+  const [works, setWorks] = useState([]);
   const [topVideos, setTopVideos] = useState(FALLBACK_VIDEOS);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [filter, setFilter] = useState('all');
@@ -166,9 +162,7 @@ const App = () => {
     const worksQuery = query(worksRef, orderBy('sortOrder', 'desc'));
     const worksUnsub = onSnapshot(worksQuery, (snapshot) => {
       const dbWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Sort dbWorks by sortOrder (desc)
-      const sortedWorks = [...INITIAL_SAMPLES, ...dbWorks];
-      setWorks(sortedWorks);
+      setWorks(dbWorks);
     });
 
     // Centralized Sync Listener
@@ -306,14 +300,10 @@ const App = () => {
   };
 
   const handleReorderWorks = async (newWorks) => {
-    // Only update DB works (exclude static samples)
-    const dbItems = newWorks.filter(w => !w.id.startsWith('s'));
-    
     try {
       const batch = writeBatch(db);
-      // Newest/Top items should have highest sortOrder
-      dbItems.forEach((work, idx) => {
-        const reversedIdx = dbItems.length - 1 - idx;
+      newWorks.forEach((work, idx) => {
+        const reversedIdx = newWorks.length - 1 - idx;
         const workRef = doc(db, 'artifacts', appId, 'public', 'data', 'works', work.id);
         batch.update(workRef, { sortOrder: reversedIdx });
       });
@@ -356,7 +346,7 @@ const App = () => {
   const handleAddWork = async (data) => {
     try {
       const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
-      const nextOrder = works.length > 0 ? Math.max(...works.filter(w => !w.id.startsWith('s')).map(w => w.sortOrder || 0), -1) + 1 : 0;
+      const nextOrder = works.length > 0 ? Math.max(...works.map(w => w.sortOrder || 0), -1) + 1 : 0;
       await addDoc(worksRef, { ...data, sortOrder: nextOrder, createdAt: new Date().toISOString() });
       return { success: true };
     } catch (error) {
@@ -381,11 +371,7 @@ const App = () => {
   };
 
   const handleDelete = async (id) => {
-    if (id.startsWith('s')) {
-      setWorks(works.filter(w => w.id !== id));
-    } else {
-      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'works', id));
-    }
+    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'works', id));
   };
 
   return (
@@ -1386,7 +1372,7 @@ const CreatorStudio = ({
                 {(studioTab === 'video' ? featuredVideos : works).filter(w => (studioTab === 'video' ? w.title : w.title)?.toLowerCase().includes(managerSearch.toLowerCase())).map((work, idx) => (
                 <tr 
                   key={work.id} 
-                  draggable={studioTab !== 'video' && !work.id.startsWith('s')}
+                  draggable={studioTab !== 'video'}
                   onDragStart={(e) => {
                     e.dataTransfer.setData('text/plain', idx);
                     e.currentTarget.classList.add('opacity-40');
@@ -1410,9 +1396,7 @@ const CreatorStudio = ({
                     const toIdx = idx;
                     
                     if (fromIdx === toIdx) return;
-                    // Don't allow dropping into static samples area
-                    if (toIdx < INITIAL_SAMPLES.length) return;
-
+                    
                     const newWorks = [...works];
                     const [movedItem] = newWorks.splice(fromIdx, 1);
                     newWorks.splice(toIdx, 0, movedItem);
@@ -1421,7 +1405,7 @@ const CreatorStudio = ({
                   className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-grab active:cursor-grabbing ${editingId === work.id ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
                 >
                   <td className="px-8 py-4 flex items-center gap-3">
-                    {studioTab !== 'video' && !work.id.startsWith('s') && (
+                    {studioTab !== 'video' && (
                       <div className="mr-2 text-slate-300">
                         <MoveVertical size={14} />
                       </div>
