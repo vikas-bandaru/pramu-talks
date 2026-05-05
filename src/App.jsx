@@ -80,9 +80,12 @@ const DEFAULT_HOME_CONTENT = {
   awardsTitle: "Awards & Honors",
   nandiTitle: "Prestigious Nandi Award",
   nandiText: "Recognized for the acclaimed digital documentary series on Revolutionary Poet Sri Sri. Celebrated for historical depth and narrative excellence.",
+  nandiImageUrl: "",
   samratTitle: "Sahitya Samrat",
   samratText: "Conferred by state literary circles for significant contribution to poetry research and book analysis.",
+  samratImageUrl: "",
   heroBgUrl: "",
+  awardsGallery: [],
   gallery: [
     { url: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400', label: 'Studio' },
     { url: 'https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=400', label: 'Literature' },
@@ -104,6 +107,41 @@ const FALLBACK_VIDEOS = [
 
 const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   const [activeRoot, setActiveRoot] = useState(null);
+  const [overlayIndex, setOverlayIndex] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+
+  const awards = data.awardsGallery || [];
+  const hasAwards = awards.length > 0;
+
+  const handleNext = (e) => {
+    e?.stopPropagation();
+    setOverlayIndex((prev) => (prev + 1) % awards.length);
+  };
+
+  const handlePrev = (e) => {
+    e?.stopPropagation();
+    setOverlayIndex((prev) => (prev - 1 + awards.length) % awards.length);
+  };
+
+  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (!touchStart) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    if (touchStart - touchEnd > 70) handleNext();
+    if (touchStart - touchEnd < -70) handlePrev();
+    setTouchStart(null);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (overlayIndex === null) return;
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'Escape') setOverlayIndex(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [overlayIndex]);
 
   return (
     <div className="animate-in fade-in duration-700">
@@ -289,49 +327,162 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
               </div>
             </div>
           </div>
-          <div className="w-full md:w-80 space-y-6">
-            <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
-              <p className="text-[10px] font-black uppercase tracking-widest text-red-600 mb-4">Quick Facts</p>
-              <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-300">
-                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Born</span> <span className="text-slate-400">Jan 5, 1960</span></li>
-                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Degrees</span> <span className="text-slate-400 text-right">MA, MA, PhD</span></li>
-                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Based In</span> <span className="text-slate-400">Hyderabad</span></li>
-                <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Collections</span> <span className="text-slate-400">19 Books</span></li>
-                <li className="flex justify-between"><span>YouTube</span> <span className="text-red-500">83K+ Subs</span></li>
-              </ul>
+          {/* Featured Profile Card in About Section */}
+          <div className="w-full md:w-80 bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group border border-slate-800">
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
+            <div className="relative z-10">
+              <div className="bg-red-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20">
+                <Star size={24} />
+              </div>
+              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murty</h4>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet & Journalist</p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Founded</span>
+                  <span className="text-xs font-bold">Pramu Talks</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Exp.</span>
+                  <span className="text-xs font-bold">40+ Years</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Awards</span>
+                  <span className="text-xs font-bold text-red-500">2x Nandi</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Awards Restored */}
-      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-center">
-          <div className="flex-1">
-            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
-            <div className="flex gap-6 items-start mb-8 bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm dark:bg-slate-950 dark:border-slate-800">
-              <div className="bg-amber-100 p-4 rounded-2xl text-amber-600 flex-shrink-0 dark:bg-amber-900/20"><Award size={32} /></div>
-              <div>
-                <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.nandiTitle}</h4>
-                <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.nandiText}</p>
+      {/* Awards & Honors Enhanced */}
+      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row gap-16 items-center mb-16">
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+                <div className="flex gap-2">
+                  <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronLeft size={14} /></div>
+                  <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronRight size={14} /></div>
+                </div>
+              </div>
+              
+              {/* Award Carousel Relocated Here */}
+              <div className="relative group/carousel">
+                <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory">
+                  {hasAwards ? awards.filter(Boolean).map((award, idx) => (
+                    <div key={idx} className="flex-shrink-0 w-[240px] md:w-[280px] snap-center">
+                      <div className="bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800 group h-full shadow-sm hover:shadow-xl transition-all">
+                        <div 
+                          className="aspect-[4/3] overflow-hidden cursor-pointer relative bg-slate-200 dark:bg-slate-900"
+                          onClick={() => setOverlayIndex(idx)}
+                        >
+                          {award.url ? (
+                            <img src={award.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={award.title || 'Award Image'} />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 group-hover:text-red-500 transition-colors">
+                              <ImageIcon size={32} className="mb-2 opacity-20" />
+                              <span className="text-[8px] font-black uppercase tracking-widest">Image Pending</span>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="bg-white/20 backdrop-blur-md p-3 rounded-full text-white"><ImageIcon size={20} /></div>
+                          </div>
+                        </div>
+                        <div className="p-6">
+                          <div className="flex justify-between items-start mb-3">
+                            <span className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">{award.year || 'N/A'}</span>
+                            <Award size={14} className="text-slate-300" />
+                          </div>
+                          <h4 className="font-black text-lg uppercase tracking-tight mb-1 dark:text-white line-clamp-1">{award.title || 'Untitled Award'}</h4>
+                          <p className="text-slate-400 text-[8px] font-bold uppercase tracking-widest truncate">{award.authority || 'Awarding Authority'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="w-full h-64 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 dark:bg-slate-950 dark:border-slate-800">
+                      <ImageIcon size={32} className="mb-4 opacity-20" />
+                      <p className="text-[10px] font-black uppercase tracking-widest">No Awards in Gallery</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex gap-6 items-start bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 border-dashed dark:bg-slate-950/50 dark:border-slate-800">
-              <div className="bg-slate-200 p-4 rounded-2xl text-slate-600 flex-shrink-0 dark:bg-slate-800"><Star size={32} /></div>
-              <div>
-                <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.samratTitle}</h4>
-                <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.samratText}</p>
+            <div className="w-full md:w-80 h-[450px] bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-12 text-center text-white relative overflow-hidden group border border-slate-800 shrink-0">
+              {data.nandiImageUrl ? (
+                <img src={data.nandiImageUrl} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity z-0" alt="Nandi Award" />
+              ) : (
+                <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
+              )}
+              <div className="relative z-10 flex flex-col items-center">
+                <Award className="w-20 h-20 text-amber-500 mb-6 transition-transform group-hover:scale-110" />
+                <p className="font-black text-3xl uppercase tracking-tighter leading-none">Nandi Awardee</p>
+                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3">Literary Excellence</p>
+                {data.nandiText && <p className={`text-slate-500 text-[10px] mt-6 leading-relaxed max-w-[200px] transition-opacity duration-500 ${data.nandiImageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>{data.nandiText}</p>}
               </div>
             </div>
-          </div>
-          <div className="w-full md:w-96 h-96 bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-12 text-center text-white relative overflow-hidden group">
-            <Award className="w-24 h-24 text-amber-500 mb-6 z-10 transition-transform group-hover:scale-110" />
-            <p className="font-black text-3xl uppercase tracking-tighter z-10 leading-none">Nandi Awardee</p>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3 z-10">Literary Excellence</p>
-            <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
           </div>
         </div>
       </section>
+
+      {/* Award Zoom Overlay */}
+      {overlayIndex !== null && (
+        <div 
+          className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={() => setOverlayIndex(null)}
+        >
+          <button 
+            className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-4"
+            onClick={() => setOverlayIndex(null)}
+          >
+            <X size={32} />
+          </button>
+
+          <button 
+            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors p-4 z-10 hidden md:block"
+            onClick={handlePrev}
+          >
+            <ChevronLeft size={48} />
+          </button>
+
+          <button 
+            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors p-4 z-10 hidden md:block"
+            onClick={handleNext}
+          >
+            <ChevronRight size={48} />
+          </button>
+
+          <div 
+            className="max-w-5xl w-full flex flex-col items-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="relative w-full aspect-[4/3] md:aspect-video rounded-[2rem] overflow-hidden shadow-2xl mb-8">
+              <img 
+                src={awards[overlayIndex].url} 
+                className="w-full h-full object-contain bg-slate-900"
+                alt={awards[overlayIndex].title}
+              />
+            </div>
+            <div className="text-center">
+              <span className="text-red-500 font-black uppercase tracking-widest text-xs mb-2 block">{awards[overlayIndex].year}</span>
+              <h3 className="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4">{awards[overlayIndex].title}</h3>
+              <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-sm">{awards[overlayIndex].authority}</p>
+            </div>
+          </div>
+
+          <div className="absolute bottom-8 flex gap-2">
+            {awards.map((_, i) => (
+              <div 
+                key={i} 
+                className={`w-2 h-2 rounded-full transition-all ${i === overlayIndex ? 'bg-red-600 w-8' : 'bg-white/20'}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Global Gallery Refactor */}
       <section className="py-24 bg-slate-50 px-4 dark:bg-slate-950">
@@ -1114,16 +1265,32 @@ const CreatorStudio = ({
 
   const handleHomeSubmit = async (e) => {
     e.preventDefault();
-    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'home_content'), homeForm);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'home_content'), homeForm);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      console.error("Firestore Save Error:", err);
+      if (err.code === 'permission-denied') {
+        alert("Error: Permission denied. Please check if you are logged in as admin.");
+      } else if (err.message && err.message.includes("too large")) {
+        alert("Error: Total page data is too large for Firestore (1MB limit). Please reduce the number of high-res images in the gallery.");
+      } else {
+        alert(`Failed to save: ${err.message || 'Unknown error'}`);
+      }
+    }
   };
 
   const handleSystemSubmit = async (e) => {
     e.preventDefault();
-    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'system_config'), systemForm);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'metadata', 'system_config'), systemForm);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      console.error("Firestore Save Error:", err);
+      alert(`Failed to save system config: ${err.message || 'Unknown error'}`);
+    }
   };
 
   const handleFileUpload = async (e, type) => {
@@ -1362,9 +1529,9 @@ const CreatorStudio = ({
             </div>
             <div className="flex gap-4">
               {editingId && <button type="button" onClick={() => setEditingId(null)} className="flex-1 bg-slate-100 text-slate-500 py-6 rounded-[2rem] font-black text-xs">Cancel</button>}
-              <button type="submit" disabled={isFetching} className="flex-[2] bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl disabled:opacity-50 flex items-center justify-center gap-2">
-                {isFetching ? <Loader2 size={16} className="animate-spin" /> : null}
-                {isFetching ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Apply Update' : 'Publish Live')}
+              <button type="submit" disabled={isFetching} className="flex-[2] bg-red-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-2xl shadow-red-600/20 disabled:opacity-50 flex items-center justify-center gap-2">
+                {isFetching ? <Loader2 size={16} className="animate-spin" /> : <UploadCloud size={16} />}
+                {isFetching ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Update Entry' : 'Publish Live')}
               </button>
             </div>
           </form>
@@ -1428,6 +1595,143 @@ const CreatorStudio = ({
             </div>
 
             <div className="space-y-8">
+              <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Awards & Honors Highlights</h3>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <InputField label="Nandi Awardee Image URL" value={homeForm.nandiImageUrl || ''} onChange={e => setHomeForm({ ...homeForm, nandiImageUrl: e.target.value })} />
+                  <button type="button" onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file'; input.accept = 'image/*';
+                    input.onchange = (e) => {
+                      const file = e.target.files[0];
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas = document.createElement('canvas');
+                          const MAX_WIDTH = 1200;
+                          let width = img.width; let height = img.height;
+                          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                          canvas.width = width; canvas.height = height;
+                          const ctx = canvas.getContext('2d');
+                          ctx.drawImage(img, 0, 0, width, height);
+                          
+                          let quality = 0.8;
+                          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                          // Iteratively compress (target < 500KB for the big card)
+                          while (dataUrl.length > 500000 && quality > 0.1) {
+                            quality -= 0.1;
+                            dataUrl = canvas.toDataURL('image/jpeg', quality);
+                          }
+                          setHomeForm(prev => ({ ...prev, nandiImageUrl: dataUrl }));
+                        };
+                        img.src = event.target.result;
+                      };
+                      reader.readAsDataURL(file);
+                    };
+                    input.click();
+                  }} className="w-full py-3 bg-slate-100 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all dark:bg-slate-950 dark:text-white">Upload Nandi Photo</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="flex justify-between items-end pb-2 border-b border-red-600/10">
+                <h3 className="text-xs font-black uppercase tracking-widest text-red-600">Awards Gallery Manager</h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{(homeForm.awardsGallery || []).length} Awards</p>
+              </div>
+
+              <div className="space-y-4">
+                {(homeForm.awardsGallery || []).map((award, idx) => (
+                  <div key={idx} className="group flex flex-col md:flex-row gap-6 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 relative transition-all hover:shadow-lg">
+                    <div className="w-full md:w-32 aspect-square bg-slate-200 rounded-2xl overflow-hidden relative flex-shrink-0">
+                      {award.url ? <img src={award.url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><ImageIcon size={24} /></div>}
+                      <button type="button" onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file'; input.accept = 'image/*';
+                        input.onchange = (e) => {
+                          const file = e.target.files[0];
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                              const canvas = document.createElement('canvas');
+                              const MAX_WIDTH = 800;
+                              let width = img.width; let height = img.height;
+                              if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                              canvas.width = width; canvas.height = height;
+                              const ctx = canvas.getContext('2d');
+                              ctx.drawImage(img, 0, 0, width, height);
+                              
+                              let quality = 0.8;
+                              let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                              // Iteratively compress to ensure it's small (~100KB target for gallery)
+                              while (dataUrl.length > 150000 && quality > 0.1) {
+                                quality -= 0.1;
+                                dataUrl = canvas.toDataURL('image/jpeg', quality);
+                              }
+
+                              const next = [...homeForm.awardsGallery];
+                              next[idx] = { ...next[idx], url: dataUrl };
+                              setHomeForm({ ...homeForm, awardsGallery: next });
+                            };
+                            img.src = event.target.result;
+                          };
+                          reader.readAsDataURL(file);
+                        };
+                        input.click();
+                      }} className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[8px] font-black uppercase">Replace Image</button>
+                    </div>
+                    
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Award Title</label>
+                        <input className="w-full p-3 bg-white rounded-xl border border-slate-100 focus:ring-1 focus:ring-red-500 font-bold outline-none text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-white" value={award.title} onChange={e => {
+                          const next = [...homeForm.awardsGallery];
+                          next[idx] = { ...next[idx], title: e.target.value };
+                          setHomeForm({ ...homeForm, awardsGallery: next });
+                        }} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Year</label>
+                        <input className="w-full p-3 bg-white rounded-xl border border-slate-100 focus:ring-1 focus:ring-red-500 font-bold outline-none text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-white" value={award.year} onChange={e => {
+                          const next = [...homeForm.awardsGallery];
+                          next[idx] = { ...next[idx], year: e.target.value };
+                          setHomeForm({ ...homeForm, awardsGallery: next });
+                        }} />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Awarding Authority</label>
+                        <input className="w-full p-3 bg-white rounded-xl border border-slate-100 focus:ring-1 focus:ring-red-500 font-bold outline-none text-xs dark:bg-slate-900 dark:border-slate-800 dark:text-white" value={award.authority} onChange={e => {
+                          const next = [...homeForm.awardsGallery];
+                          next[idx] = { ...next[idx], authority: e.target.value };
+                          setHomeForm({ ...homeForm, awardsGallery: next });
+                        }} />
+                      </div>
+                    </div>
+
+                    <button type="button" onClick={() => {
+                      const next = [...homeForm.awardsGallery];
+                      next.splice(idx, 1);
+                      setHomeForm({ ...homeForm, awardsGallery: next });
+                    }} className="absolute top-4 right-4 p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all dark:hover:bg-red-900/20"><Trash2 size={16} /></button>
+                  </div>
+                ))}
+
+                <button type="button" onClick={() => {
+                  setHomeForm(prev => ({
+                    ...prev,
+                    awardsGallery: [...(prev.awardsGallery || []), { title: '', year: '', authority: '', url: '' }]
+                  }));
+                }} className="w-full p-8 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-red-600 hover:text-red-600 transition-all dark:border-slate-800">
+                  <Plus size={24} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Add New Award to Gallery</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+
               <div className="flex justify-between items-end pb-2 border-b border-red-600/10">
                 <h3 className="text-xs font-black uppercase tracking-widest text-red-600">Media Moments Gallery</h3>
                 <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{homeForm.gallery?.length || 0} Moments</p>
@@ -1482,7 +1786,10 @@ const CreatorStudio = ({
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Save Home Changes</button>
+            <button type="submit" className="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-2xl shadow-red-600/20 hover:bg-red-700 transition-all flex items-center justify-center gap-3">
+              <CheckCircle2 size={18} />
+              Save Home Changes
+            </button>
           </form>
         </div>
       )}
@@ -1529,7 +1836,10 @@ const CreatorStudio = ({
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">Apply System Config</button>
+            <button type="submit" className="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-2xl shadow-red-600/20 flex items-center justify-center gap-3">
+              <Settings size={18} />
+              Apply System Config
+            </button>
           </form>
         </div>
       )}
