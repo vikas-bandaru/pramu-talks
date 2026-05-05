@@ -645,10 +645,12 @@ const WorkDetailView = ({ work, onBack }) => {
         <div className="space-y-8">
           <div className={`${isLandscapeMedia ? 'aspect-video' : 'aspect-[3/4]'} bg-slate-100 rounded-[3rem] overflow-hidden shadow-2xl border-4 border-white dark:bg-slate-900 dark:border-slate-800 relative`}>
             <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=800'} className="w-full h-full object-cover" alt={work.title} />
-            <div className="absolute top-6 left-6 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">{work.type}</div>
+            <div className="absolute top-6 left-6 px-4 py-2 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg">
+              {[].concat(work.type).join(' / ')}
+            </div>
           </div>
         
-          {work.rating && work.type === 'review' && (
+          {work.rating && workTypes.includes('review') && (
             <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 dark:bg-amber-900/10 dark:border-amber-900/20">
               <div className="flex items-center gap-4 mb-2">
                 <div className="flex text-amber-500 gap-1">
@@ -758,7 +760,9 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
             <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
               <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
                 <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
-                <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">{Array.isArray(work.type) ? work.type[0] : work.type}</div>
+                <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">
+                  {[].concat(work.type).join(' / ')}
+                </div>
                 {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
               </div>
               <div className="px-3 pb-4 flex-1 flex flex-col">
