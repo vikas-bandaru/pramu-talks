@@ -474,7 +474,7 @@ const App = () => {
 
       <div className="pt-16">
         {activeTab === 'home' && <HomeView setActiveTab={setActiveTab} data={homeData} />}
-        {activeTab === 'works' && !selectedWork && <ArchiveView works={works.filter(w => filter === 'all' || w.type === filter)} isAdmin={isAdmin} onDelete={handleDelete} setFilter={setFilter} currentFilter={filter} onSelect={setSelectedWork} />}
+        {activeTab === 'works' && !selectedWork && <ArchiveView works={works.filter(w => filter === 'all' || [].concat(w.type).includes(filter))} isAdmin={isAdmin} onDelete={handleDelete} setFilter={setFilter} currentFilter={filter} onSelect={setSelectedWork} />}
         {activeTab === 'works' && selectedWork && <WorkDetailView work={selectedWork} onBack={() => setSelectedWork(null)} />}
         {activeTab === 'videos' && <VideosView works={featuredVideos} />}
         {activeTab === 'studio' && isAdmin && (
@@ -629,7 +629,8 @@ const HomeView = ({ setActiveTab, data }) => (
 );
 
 const WorkDetailView = ({ work, onBack }) => {
-  const isLandscapeMedia = (work.type === 'review' || work.type === 'audiobook') && (
+  const workTypes = [].concat(work.type);
+  const isLandscapeMedia = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
     (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
     (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
   );
@@ -722,7 +723,8 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
       {works.map(work => {
-        const isLandscape = (work.type === 'review' || work.type === 'audiobook') && (
+        const workTypes = [].concat(work.type);
+        const isLandscape = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
           (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
           (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
         );
@@ -854,7 +856,7 @@ const CreatorStudio = ({
   onInitializeSort, onReorder
 }) => {
   const [studioTab, setStudioTab] = useState('archive');
-  const [activeType, setActiveType] = useState('book');
+  const [activeTypes, setActiveTypes] = useState(['book']);
   const [managerSearch, setManagerSearch] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -913,8 +915,8 @@ const CreatorStudio = ({
     setIsFetching(true);
     
     // Clean data based on type
-    const cleanedData = { ...form, type: activeType };
-    if (activeType !== 'review') delete cleanedData.rating;
+    const cleanedData = { ...form, type: activeTypes };
+    if (!activeTypes.includes('review')) delete cleanedData.rating;
     
     let result;
     if (editingId) {
@@ -1059,7 +1061,21 @@ const CreatorStudio = ({
           <div className="flex flex-wrap gap-2 mb-10 items-center justify-between">
             <div className="flex flex-wrap gap-2">
               {types.map(t => (
-                <button key={t.id} onClick={() => setActiveType(t.id)} className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-widest text-[8px] transition-all ${activeType === t.id ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-400'}`}><t.icon size={12} /> {t.label}</button>
+                <button 
+                  key={t.id} 
+                  type="button"
+                  onClick={() => {
+                    const current = [...activeTypes];
+                    if (current.includes(t.id)) {
+                      if (current.length > 1) setActiveTypes(current.filter(id => id !== t.id));
+                    } else {
+                      setActiveTypes([...current, t.id]);
+                    }
+                  }} 
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl font-black uppercase tracking-widest text-[8px] transition-all ${activeTypes.includes(t.id) ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-950 dark:text-slate-400'}`}
+                >
+                  <t.icon size={12} /> {t.label}
+                </button>
               ))}
             </div>
           </div>
@@ -1128,7 +1144,7 @@ const CreatorStudio = ({
                 <InputField label="Work Title" name="title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
               </div>
               <div className="space-y-6">
-                {activeType === 'book' && <>
+                {activeTypes.includes('book') && <>
                   <InputField label="Publishing Year" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
                   <InputField label="Purchase Link" name="purchaseLink" value={form.purchaseLink} onChange={e => setForm({...form, purchaseLink: e.target.value})} />
                   <div className="space-y-2">
@@ -1143,9 +1159,9 @@ const CreatorStudio = ({
                   </div>
                   <InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({...form, awards: e.target.value})} />
                 </>}
-                {(activeType === 'essay' || activeType === 'story') && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({...form, magazine: e.target.value})} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /></>}
-                {activeType === 'review' && <><InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} /><InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} /><InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} /></>}
-                {activeType === 'audiobook' && <>
+                {(activeTypes.includes('essay') || activeTypes.includes('story')) && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({...form, magazine: e.target.value})} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /></>}
+                {activeTypes.includes('review') && <><InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} /><InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} /><InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} /></>}
+                {activeTypes.includes('audiobook') && <>
                   <InputField label="Narrator / Author" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Audio Upload (Max 20MB)</label>
@@ -1430,13 +1446,29 @@ const CreatorStudio = ({
                     <span className="font-bold text-sm line-clamp-1 dark:text-white">{work.title}</span>
                   </td>
                   <td className="px-8 py-4">
-                    <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">
-                      {studioTab === 'video' ? 'VIDEO CONTENT' : work.type}
+                    <div className="flex flex-wrap gap-1">
+                      {studioTab === 'video' ? (
+                        <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">VIDEO CONTENT</span>
+                      ) : (
+                        [].concat(work.type).map(t => (
+                          <span key={t} className="px-2 py-1 bg-red-100 text-red-600 text-[9px] font-black uppercase rounded dark:bg-red-900/20 dark:text-red-400">{t}</span>
+                        ))
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-8 py-4 hidden md:table-cell">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                      {work.pubYear || '—'}
                     </span>
                   </td>
                   <td className="px-8 py-4 text-right">
                     {studioTab !== 'video' && (
-                      <button onClick={() => { setEditingId(work.id); setActiveType(work.type); setForm({...work}); window.scrollTo({top:0, behavior:'smooth'}); }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all">
+                      <button onClick={() => { 
+                        setEditingId(work.id); 
+                        setActiveTypes([].concat(work.type)); 
+                        setForm({...work}); 
+                        window.scrollTo({top:0, behavior:'smooth'}); 
+                      }} className="p-2 text-slate-300 hover:text-blue-600 mr-2 transition-all">
                         <Edit3 size={16} />
                       </button>
                     )}
