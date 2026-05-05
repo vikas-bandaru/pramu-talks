@@ -617,7 +617,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter }) => 
           <div className="px-3 pb-4 flex-1 flex flex-col">
             <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
             <div className="space-y-1 mb-4">
-              {work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
+              {work.type === 'review' && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
               {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
               {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
               {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
@@ -738,7 +738,7 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
   const [form, setForm] = useState({
     title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', 
     purchaseLink: '', awards: '', link: '', magazine: '', 
-    sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '',
+    sourceName: '', availableAt: '', rating: '', youtubeLink: '', bookLink: '',
     pdfUrl: '', audioUrl: ''
   });
 
@@ -785,17 +785,22 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsFetching(true);
+    
+    // Clean data based on type
+    const cleanedData = { ...form, type: activeType };
+    if (activeType !== 'review') delete cleanedData.rating;
+    
     let result;
     if (editingId) {
-      result = await onUpdate(editingId, { ...form, type: activeType });
+      result = await onUpdate(editingId, cleanedData);
     } else {
-      result = await onAdd({ ...form, type: activeType });
+      result = await onAdd(cleanedData);
     }
     
     setIsFetching(false);
     if (result && result.success) {
       setEditingId(null);
-      setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
+      setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } else {
