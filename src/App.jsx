@@ -714,50 +714,76 @@ const WorkDetailView = ({ work, onBack }) => {
   );
 };
 
-const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSelect }) => (
-  <div className="max-w-7xl mx-auto px-4 py-16 animate-in slide-in-from-bottom-6 duration-500">
-    <div className="flex flex-wrap gap-2 mb-16 items-center">
-      {['all', 'book', 'essay', 'story', 'review', 'audiobook'].map(cat => (
-        <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat}</button>
-      ))}
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-      {works.map(work => {
-        const workTypes = [].concat(work.type);
-        const isLandscape = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
-          (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
-          (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
-        );
+const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSelect }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredWorks = works.filter(work => {
+    const s = searchTerm.toLowerCase();
+    return work.title.toLowerCase().includes(s) || 
+           (work.pubYear && work.pubYear.toString().includes(s)) ||
+           (work.magazine && work.magazine.toLowerCase().includes(s)) ||
+           (work.type && work.type.toString().toLowerCase().includes(s));
+  });
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-16 animate-in slide-in-from-bottom-6 duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16">
+        <div className="flex flex-wrap gap-2 items-center">
+          {['all', 'book', 'essay', 'story', 'review', 'audiobook'].map(cat => (
+            <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat}</button>
+          ))}
+        </div>
         
-        return (
-          <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
-            <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
-              <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
-              <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">{work.type}</div>
-              {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
-            </div>
-            <div className="px-3 pb-4 flex-1 flex flex-col">
-              <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
-              <div className="space-y-1 mb-4">
-                {work.type === 'review' && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
-                {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
-                {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
-                {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
+        <div className="relative w-full md:w-72 group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-600 transition-colors" size={16} />
+          <input 
+            type="text"
+            placeholder="Search by title, year..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-[1.5rem] text-xs font-bold outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 transition-all dark:bg-slate-900 dark:border-slate-800 dark:text-white"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        {filteredWorks.map(work => {
+          const workTypes = [].concat(work.type);
+          const isLandscape = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
+            (work.youtubeLink && (work.youtubeLink.includes('youtube.com') || work.youtubeLink.includes('youtu.be'))) || 
+            (work.link && (work.link.includes('youtube.com') || work.link.includes('youtu.be')))
+          );
+          
+          return (
+            <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
+              <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
+                <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
+                <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">{Array.isArray(work.type) ? work.type[0] : work.type}</div>
+                {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
               </div>
-              <div className="mt-auto">
-                {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
-                  <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
-                    {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
-                  </a>
-                )}
+              <div className="px-3 pb-4 flex-1 flex flex-col">
+                <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
+                <div className="space-y-1 mb-4">
+                  {(workTypes.includes('review')) && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
+                  {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
+                  {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
+                  {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
+                </div>
+                <div className="mt-auto">
+                  {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
+                    <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
+                      {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const VideosView = ({ works, isLoading }) => (
   <div className="max-w-7xl mx-auto px-4 py-16 animate-in fade-in duration-500">
@@ -1160,9 +1186,15 @@ const CreatorStudio = ({
                   <InputField label="Awards" name="awards" value={form.awards} onChange={e => setForm({...form, awards: e.target.value})} />
                 </>}
                 {(activeTypes.includes('essay') || activeTypes.includes('story')) && <><InputField label="Magazine / Website" name="magazine" value={form.magazine} onChange={e => setForm({...form, magazine: e.target.value})} /><InputField label="Pub Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} /></>}
-                {activeTypes.includes('review') && <><InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} /><InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} /><InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} /></>}
+                {activeTypes.includes('review') && <>
+                  <InputField label="Source Name" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
+                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
+                  <InputField label="Rating (1-5)" name="rating" value={form.rating} onChange={e => setForm({...form, rating: e.target.value})} />
+                  <InputField label="Video Link" name="youtubeLink" value={form.youtubeLink} onChange={e => setForm({...form, youtubeLink: e.target.value})} />
+                </>}
                 {activeTypes.includes('audiobook') && <>
                   <InputField label="Narrator / Author" name="sourceName" value={form.sourceName} onChange={e => setForm({...form, sourceName: e.target.value})} />
+                  <InputField label="Publish Date" name="pubYear" value={form.pubYear} onChange={e => setForm({...form, pubYear: e.target.value})} />
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Audio Upload (Max 20MB)</label>
                     <div className="flex gap-2">
