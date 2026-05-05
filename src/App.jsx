@@ -161,7 +161,8 @@ const App = () => {
   useEffect(() => {
     if (!user) return;
     const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
-    const worksUnsub = onSnapshot(worksRef, (snapshot) => {
+    const worksQuery = query(worksRef, orderBy('createdAt', 'desc'));
+    const worksUnsub = onSnapshot(worksQuery, (snapshot) => {
       const dbWorks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setWorks([...INITIAL_SAMPLES, ...dbWorks]);
     });
@@ -314,16 +315,28 @@ const App = () => {
   };
 
   const handleAddWork = async (data) => {
-    const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
-    await addDoc(worksRef, { ...data, createdAt: new Date().toISOString() });
+    try {
+      const worksRef = collection(db, 'artifacts', appId, 'public', 'data', 'works');
+      await addDoc(worksRef, { ...data, createdAt: new Date().toISOString() });
+      return { success: true };
+    } catch (error) {
+      console.error("Error adding work:", error);
+      return { success: false, error: error.message };
+    }
   };
 
   const handleUpdateWork = async (id, data) => {
-    if (id.startsWith('s')) {
-      setWorks(works.map(w => w.id === id ? { ...w, ...data } : w));
-    } else {
-      const workDoc = doc(db, 'artifacts', appId, 'public', 'data', 'works', id);
-      await updateDoc(workDoc, data);
+    try {
+      if (id.startsWith('s')) {
+        setWorks(works.map(w => w.id === id ? { ...w, ...data } : w));
+      } else {
+        const workDoc = doc(db, 'artifacts', appId, 'public', 'data', 'works', id);
+        await updateDoc(workDoc, data);
+      }
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating work:", error);
+      return { success: false, error: error.message };
     }
   };
 
@@ -607,6 +620,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter }) => 
               {work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
               {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
               {work.pubYear && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">{work.pubYear}</div>}
+              {work.brief && <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-3 mt-3 leading-relaxed font-medium">{work.brief}</p>}
             </div>
             <div className="mt-auto">
               {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
@@ -696,7 +710,7 @@ const Footer = ({ socials }) => (
       <div className="flex flex-col md:items-end justify-between">
         <div className="text-right">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-2">Academic & Literary Portal</p>
-          <h3 className="text-4xl font-black uppercase tracking-tighter italic lg:text-5xl">Poetry in <span className="text-red-600 underline decoration-white/10 underline-offset-4">Journalism.</span></h3>
+          <h3 className="text-4xl font-black uppercase tracking-tighter italic lg:text-5xl">Poetry & <span className="text-red-600 underline decoration-white/10 underline-offset-4">Journalism.</span></h3>
         </div>
         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-12 dark:text-slate-600">© 2026 Pramu Talks. Official Dr. Prasada Murthy Archive.</p>
       </div>
@@ -770,12 +784,23 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (editingId) await onUpdate(editingId, { ...form, type: activeType });
-    else await onAdd({ ...form, type: activeType });
-    setEditingId(null);
-    setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    setIsFetching(true);
+    let result;
+    if (editingId) {
+      result = await onUpdate(editingId, { ...form, type: activeType });
+    } else {
+      result = await onAdd({ ...form, type: activeType });
+    }
+    
+    setIsFetching(false);
+    if (result && result.success) {
+      setEditingId(null);
+      setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '5', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } else {
+      alert(`Failed to save: ${result?.error || 'Unknown error'}`);
+    }
   };
 
   const handleHomeSubmit = async (e) => {
@@ -916,7 +941,57 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
                     <button type="button" onClick={() => fileInputRef.current.click()} className="p-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase">Upload</button>
                     <button type="button" onClick={fetchMetadataFromLink} disabled={isFetching} className="p-3 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase">Sync</button>
                   </div>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => { const reader = new FileReader(); reader.onloadend = () => setForm(f => ({...f, thumbnail: reader.result})); reader.readAsDataURL(e.target.files[0]); }} />
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => { 
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader(); 
+                    reader.onload = (event) => {
+                      const img = new Image();
+                      img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Limit dimensions to 1200px max
+                        const MAX_DIM = 1200;
+                        if (width > height) {
+                          if (width > MAX_DIM) {
+                            height *= MAX_DIM / width;
+                            width = MAX_DIM;
+                          }
+                        } else {
+                          if (height > MAX_DIM) {
+                            width *= MAX_DIM / height;
+                            height = MAX_DIM;
+                          }
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Iteratively compress if needed (target < 800KB)
+                        let quality = 0.8;
+                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        
+                        // Approx check: base64 string length / 1.33 = bytes
+                        while (dataUrl.length > 800000 && quality > 0.1) {
+                          quality -= 0.1;
+                          dataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        
+                        if (dataUrl.length > 1000000) {
+                          alert("Image is still too large after compression. Please use a smaller image file.");
+                        } else {
+                          setForm(f => ({...f, thumbnail: dataUrl}));
+                        }
+                      };
+                      img.src = event.target.result;
+                    }; 
+                    reader.readAsDataURL(file); 
+                  }} />
                 </div>
                 <InputField label="Primary URL (Content Link)" name="link" placeholder="YouTube or Article URL" value={form.link} onChange={e => setForm({...form, link: e.target.value})} />
                 <InputField label="Work Title" name="title" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
@@ -958,7 +1033,10 @@ const CreatorStudio = ({ onAdd, onUpdate, works, onDelete, isVideoLoading, onSyn
             </div>
             <div className="flex gap-4">
               {editingId && <button type="button" onClick={() => setEditingId(null)} className="flex-1 bg-slate-100 text-slate-500 py-6 rounded-[2rem] font-black text-xs">Cancel</button>}
-              <button type="submit" className="flex-[2] bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl">{editingId ? 'Apply Update' : 'Publish Live'}</button>
+              <button type="submit" disabled={isFetching} className="flex-[2] bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-xl disabled:opacity-50 flex items-center justify-center gap-2">
+                {isFetching ? <Loader2 size={16} className="animate-spin" /> : null}
+                {isFetching ? (editingId ? 'Updating...' : 'Publishing...') : (editingId ? 'Apply Update' : 'Publish Live')}
+              </button>
             </div>
           </form>
         </div>
