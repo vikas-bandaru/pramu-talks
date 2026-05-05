@@ -72,6 +72,10 @@ const DEFAULT_HOME_CONTENT = {
   philosophyQuote: "Literature is not just words on a page; it is the heartbeat of society.",
   philosophyText: "Dr. Murthy's philosophy centers on 'Sahitya-Samaja'—the inevitable bond between art and social responsibility. Masterfully bridging classroom pedagogy with digital ethics.",
   philosophyAccent: "శ్రమయే జీవన సౌందర్యము",
+  rootsEducation: "- **Ph.D in Telugu Literature** from Andhra University\n- **MA Telugu & MA English**\n- Specialized research on modern poetry (1940s-60s) and the impact of Sri Sri's Mahaprasthanam",
+  rootsLiterature: "Published numerous research papers and books on modern Telugu literature. Active contributor to literary journals and literary criticism.",
+  rootsExperience: "- YouTube: Founder of Pramu Talks channel (3+ years, 83.7K+ subscribers)\n- Digital Media: 20 years in digital journalism and content strategy\n- Print Media: 5 years experience as Senior Sub-editor",
+  featuredWorkId: "",
   awardsTitle: "Awards & Honors",
   nandiTitle: "Prestigious Nandi Award",
   nandiText: "Recognized for the acclaimed digital documentary series on Revolutionary Poet Sri Sri. Celebrated for historical depth and narrative excellence.",
@@ -95,6 +99,265 @@ const FALLBACK_VIDEOS = [
   { id: 'v2', title: 'Philosophy of Mahaprasthanam - Detailed Analysis', thumbnail: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600', url: 'https://www.youtube.com/@pramutalks' },
   { id: 'v3', title: 'Journalism Ethics in the Digital Era', thumbnail: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600', url: 'https://www.youtube.com/@pramutalks' }
 ];
+// --- View Components ---
+
+const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
+  const [activeRoot, setActiveRoot] = useState(null);
+
+  return (
+    <div className="animate-in fade-in duration-700">
+      <section className="bg-slate-900 text-white py-32 relative overflow-hidden dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
+            <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tight uppercase">
+              <ReactMarkdown components={{ p: ({node, ...props}) => <React.Fragment {...props}/>, strong: ({node, ...props}) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
+            </h1>
+            <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
+            <div className="flex flex-wrap gap-5">
+              <button onClick={() => window.open('https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
+              <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95">The Archive</button>
+            </div>
+          </div>
+        </div>
+        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" alt=""/>}
+        <div className="absolute -bottom-48 -right-48 w-[800px] h-[800px] bg-red-600/5 blur-[120px] rounded-full" />
+      </section>
+
+      {/* Philosophy */}
+      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl font-black mb-6 uppercase tracking-tighter dark:text-white">{data.philosophyTitle}</h2>
+            <div className="w-12 h-1 bg-red-600 mb-8" />
+            <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-6 dark:text-slate-300">"{data.philosophyQuote}"</p>
+            <p className="text-slate-500 leading-relaxed dark:text-slate-400">{data.philosophyText}</p>
+          </div>
+          <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-100 flex flex-col items-center justify-center text-center dark:bg-slate-950 dark:border-slate-800">
+            <BookOpen className="w-16 h-16 text-red-600 mb-4" />
+            <p className="text-2xl font-black text-slate-900 uppercase dark:text-white">{data.philosophyAccent}</p>
+            <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Sri Sri's Eternal Inspiration</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Academic Roots */}
+      <section className="py-24 bg-slate-50 px-4 border-b border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter dark:text-white">Intellectual Foundations</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">A Synthesis of Academia, Media, and Literary Excellence</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
+            {[
+              { 
+                id: 'edu', 
+                icon: GraduationCap, 
+                title: 'Academic Excellence', 
+                desc: 'Doctoral research and university-level scholarly background.', 
+                content: data.rootsEducation,
+                featured: works.find(w => w.id === data.featuredWorkId)
+              },
+              { 
+                id: 'media', 
+                icon: History, 
+                title: 'Media Evolution', 
+                desc: 'Two decades of leadership in digital and print journalism.', 
+                content: data.rootsExperience 
+              },
+              { 
+                id: 'lit', 
+                icon: BookOpen, 
+                title: 'Literary Legacy', 
+                desc: 'Authoring and analyzing seminal works in Telugu literature.', 
+                content: data.rootsLiterature,
+                stats: works.reduce((acc, w) => {
+                  const types = [].concat(w.type);
+                  types.forEach(t => acc[t] = (acc[t] || 0) + 1);
+                  return acc;
+                }, { total: works.length })
+              }
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = activeRoot === item.id;
+              return (
+                <div 
+                  key={item.id} 
+                  onClick={() => setActiveRoot(isActive ? null : item.id)}
+                  className={`relative p-8 rounded-[3rem] shadow-sm border transition-all duration-500 cursor-pointer group overflow-hidden ${isActive ? 'bg-slate-900 border-slate-700 text-white shadow-2xl scale-[1.02]' : 'bg-white border-slate-100 hover:shadow-2xl hover:-translate-y-1 dark:bg-slate-900 dark:border-slate-800'}`}
+                >
+                  {/* Decorative Gradient Background for Active State */}
+                  {isActive && <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 blur-[80px] rounded-full -mr-20 -mt-20 animate-pulse" />}
+                  
+                  <div className="relative z-10">
+                    <div className={`p-5 rounded-2xl w-fit mb-8 transition-all duration-500 ${isActive ? 'bg-red-600 text-white rotate-6 shadow-lg shadow-red-600/20' : 'bg-slate-50 text-red-600 group-hover:bg-red-600 group-hover:text-white group-hover:scale-110 dark:bg-slate-950 shadow-inner'}`}>
+                      <Icon size={36} />
+                    </div>
+                    
+                    <h3 className={`text-2xl font-black mb-4 uppercase tracking-tighter transition-colors ${isActive ? 'text-white' : 'dark:text-white'}`}>{item.title}</h3>
+                    
+                    {isActive ? (
+                      <div className="mt-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="prose prose-sm prose-invert max-w-none">
+                          <ReactMarkdown components={{ 
+                            p: ({node, ...props}) => <p className="text-slate-300 text-base leading-relaxed mb-6" {...props} />,
+                            li: ({node, ...props}) => <li className="text-slate-300 text-sm mb-3 list-disc ml-4 marker:text-red-500" {...props} />
+                          }}>{item.content || 'Details coming soon...'}</ReactMarkdown>
+                          
+                          {item.id === 'edu' && item.featured && (
+                            <div className="mt-8 p-6 bg-white/5 rounded-3xl border border-white/10 flex items-center gap-6 group/item hover:bg-white/10 transition-all active:scale-[0.98]" onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTab('works');
+                              setSelectedWork(item.featured);
+                            }}>
+                              <div className="relative">
+                                <img src={item.featured.thumbnail} className="w-16 h-20 object-cover rounded-xl shadow-2xl transition-transform group-hover/item:scale-105" alt="" />
+                                <div className="absolute inset-0 rounded-xl shadow-inner pointer-events-none" />
+                              </div>
+                              <div>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 mb-1">Featured Publication</p>
+                                <p className="text-white font-black text-lg leading-tight truncate max-w-[240px]">{item.featured.title}</p>
+                                <p className="text-slate-500 text-[10px] font-bold uppercase mt-1">View Archive Entry</p>
+                              </div>
+                              <div className="ml-auto bg-white/10 p-3 rounded-full text-white/50 group-hover/item:text-white group-hover/item:bg-red-600 transition-all">
+                                <ChevronRight size={20} />
+                              </div>
+                            </div>
+                          )}
+
+                          {item.id === 'lit' && item.stats && (
+                            <div className="mt-8 grid grid-cols-2 gap-3">
+                                  {Object.entries(item.stats).filter(([k]) => k !== 'total').map(([type, count]) => {
+                                    const pluralType = type === 'Book' ? 'Books' : 
+                                                     type === 'Review' ? 'Reviews' : 
+                                                     type === 'Essay' ? 'Essays' : 
+                                                     type.endsWith('s') ? type : `${type}s`;
+                                    return (
+                                      <div key={type} className="p-5 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors group/stat">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 group-hover/stat:text-red-400 transition-colors">{pluralType}</p>
+                                        <p className="text-white font-black text-2xl">{count}</p>
+                                      </div>
+                                    );
+                                  })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-slate-500 text-base leading-relaxed dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">{item.desc}</p>
+                    )}
+                    
+                    <div className={`mt-10 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-3 transition-all ${isActive ? 'text-red-400' : 'text-slate-400 group-hover:text-red-600'}`}>
+                      <div className={`w-12 h-[2px] rounded-full transition-all ${isActive ? 'bg-red-600 w-16' : 'bg-slate-200 group-hover:bg-red-600'}`} />
+                      {isActive ? 'Minimize' : 'Explore Details'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-start">
+          <div className="flex-1">
+            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murty</h2>
+            <div className="prose prose-lg dark:prose-invert max-w-none">
+              <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-10 dark:text-slate-300">
+                "A distinguished public intellectual, celebrated poet, and veteran journalist whose career spans over four decades of scholarly and cultural discourse."
+              </p>
+              <div className="space-y-6 text-slate-500 dark:text-slate-400 leading-relaxed text-lg">
+                <p>
+                  <strong>Dr. Bandaru Rama Vara Prasada Murty</strong>, widely recognized as <strong>Dr. Prasada Murty</strong>, was born on January 5, 1960, in Nidamarru, Andhra Pradesh. He is a formidable scholar of language and culture, holding an M.A. in Telugu, an M.A. in English, and a Ph.D. in Telugu Literature.
+                </p>
+                <p>
+                  With over 20 years of leadership in digital and print journalism, Dr. Murty has worked with prominent media outlets, earning widespread acclaim for his insightful commentary. In 2008, his dedication to Telugu heritage was honored with two prestigious <strong>Nandi Awards</strong> for his definitive documentary on the legendary poet <strong>Sri Sri</strong>.
+                </p>
+                <p>
+                  A prolific author, he has published more than 15 poetry collections, a short story book, and a seminal Ph.D. thesis. Beyond his literary achievements, he is a passionate advocate for social justice, secularism, and human rights. Today, through his independent YouTube channel, <strong>"Pramu Talks,"</strong> he continues to inspire audiences by promoting rational thinking and progressive values across India.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-80 space-y-6">
+             <div className="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+                <p className="text-[10px] font-black uppercase tracking-widest text-red-600 mb-4">Quick Facts</p>
+                <ul className="space-y-4 text-sm font-bold text-slate-600 dark:text-slate-300">
+                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Born</span> <span className="text-slate-400">Jan 5, 1960</span></li>
+                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Degrees</span> <span className="text-slate-400 text-right">MA, MA, PhD</span></li>
+                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Based In</span> <span className="text-slate-400">Hyderabad</span></li>
+                  <li className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-800"><span>Collections</span> <span className="text-slate-400">15+ Books</span></li>
+                  <li className="flex justify-between"><span>YouTube</span> <span className="text-red-500">83K+ Subs</span></li>
+                </ul>
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Awards Restored */}
+      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-center">
+          <div className="flex-1">
+            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+            <div className="flex gap-6 items-start mb-8 bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm dark:bg-slate-950 dark:border-slate-800">
+              <div className="bg-amber-100 p-4 rounded-2xl text-amber-600 flex-shrink-0 dark:bg-amber-900/20"><Award size={32} /></div>
+              <div>
+                <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.nandiTitle}</h4>
+                <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.nandiText}</p>
+              </div>
+            </div>
+            <div className="flex gap-6 items-start bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 border-dashed dark:bg-slate-950/50 dark:border-slate-800">
+              <div className="bg-slate-200 p-4 rounded-2xl text-slate-600 flex-shrink-0 dark:bg-slate-800"><Star size={32} /></div>
+              <div>
+                <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.samratTitle}</h4>
+                <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.samratText}</p>
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-96 h-96 bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-12 text-center text-white relative overflow-hidden group">
+             <Award className="w-24 h-24 text-amber-500 mb-6 z-10 transition-transform group-hover:scale-110" />
+             <p className="font-black text-3xl uppercase tracking-tighter z-10 leading-none">Nandi Awardee</p>
+             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3 z-10">Literary Excellence</p>
+             <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
+          </div>
+        </div>
+      </section>
+
+      {/* Global Gallery Refactor */}
+      <section className="py-24 bg-slate-50 px-4 dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-end mb-12">
+             <div>
+                <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
+                <p className="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
+             </div>
+             <div className="hidden md:flex gap-2 text-slate-400">
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronLeft size={16}/></div>
+                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronRight size={16}/></div>
+             </div>
+          </div>
+          
+          <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible">
+            {(data.gallery || []).map((item, i) => (
+              <div key={i} className="flex-shrink-0 w-[85%] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
+                <img src={item.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.label} />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
+                  <div>
+                     <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Moment</p>
+                     <span className="text-white text-lg font-black uppercase tracking-tighter italic">{item.label}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
 
 
 const App = () => {
@@ -397,7 +660,6 @@ const App = () => {
               {[
                 { id: 'home', label: 'Home', icon: Home },
                 { id: 'works', label: 'Archive', icon: Library },
-                { id: 'videos', label: 'Videos', icon: PlayCircle },
                 { id: 'studio', label: 'Studio', icon: Settings, admin: true },
                 { id: 'research', label: 'Research', icon: Database, admin: true },
               ].filter(item => !item.admin || isAdmin).map(item => (
@@ -422,7 +684,6 @@ const App = () => {
               {[
                 { id: 'home', label: 'Home', icon: Home },
                 { id: 'works', label: 'Archive', icon: Library },
-                { id: 'videos', label: 'Videos', icon: PlayCircle },
                 { id: 'studio', label: 'Studio', icon: Settings, admin: true },
                 { id: 'research', label: 'Research', icon: Database, admin: true },
               ].filter(item => !item.admin || isAdmin).map(item => (
@@ -473,10 +734,10 @@ const App = () => {
       )}
 
       <div className="pt-16">
-        {activeTab === 'home' && <HomeView setActiveTab={setActiveTab} data={homeData} />}
+        {activeTab === 'home' && <HomeView setActiveTab={setActiveTab} data={homeData} works={works} setSelectedWork={setSelectedWork} />}
         {activeTab === 'works' && !selectedWork && <ArchiveView works={works.filter(w => filter === 'all' || [].concat(w.type).includes(filter))} isAdmin={isAdmin} onDelete={handleDelete} setFilter={setFilter} currentFilter={filter} onSelect={setSelectedWork} />}
         {activeTab === 'works' && selectedWork && <WorkDetailView work={selectedWork} onBack={() => setSelectedWork(null)} />}
-        {activeTab === 'videos' && <VideosView works={featuredVideos} />}
+        {/* {activeTab === 'videos' && <VideosView works={featuredVideos} />} */}
         {activeTab === 'studio' && isAdmin && (
           <CreatorStudio 
             onAdd={handleAddWork} 
@@ -505,128 +766,6 @@ const App = () => {
   );
 };
 
-// --- View Components ---
-
-const HomeView = ({ setActiveTab, data }) => (
-  <div className="animate-in fade-in duration-700">
-    <section className="bg-slate-900 text-white py-32 relative overflow-hidden dark:bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
-        <div className="max-w-4xl">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
-          <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tight uppercase">
-            <ReactMarkdown components={{ p: ({node, ...props}) => <React.Fragment {...props}/>, strong: ({node, ...props}) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
-          </h1>
-          <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
-          <div className="flex flex-wrap gap-5">
-            <button onClick={() => setActiveTab('videos')} className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
-            <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95">The Archive</button>
-          </div>
-        </div>
-      </div>
-      {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" alt=""/>}
-      <div className="absolute -bottom-48 -right-48 w-[800px] h-[800px] bg-red-600/5 blur-[120px] rounded-full" />
-    </section>
-
-    {/* Philosophy */}
-    <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 className="text-4xl font-black mb-6 uppercase tracking-tighter dark:text-white">{data.philosophyTitle}</h2>
-          <div className="w-12 h-1 bg-red-600 mb-8" />
-          <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-6 dark:text-slate-300">"{data.philosophyQuote}"</p>
-          <p className="text-slate-500 leading-relaxed dark:text-slate-400">{data.philosophyText}</p>
-        </div>
-        <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-100 flex flex-col items-center justify-center text-center dark:bg-slate-950 dark:border-slate-800">
-          <BookOpen className="w-16 h-16 text-red-600 mb-4" />
-          <p className="text-2xl font-black text-slate-900 uppercase dark:text-white">{data.philosophyAccent}</p>
-          <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Sri Sri's Eternal Inspiration</p>
-        </div>
-      </div>
-    </section>
-
-    {/* Academic Roots */}
-    <section className="py-24 bg-slate-50 px-4 border-b border-slate-100 dark:bg-slate-950 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter dark:text-white">Academic Roots</h2>
-          <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">The Journey of a Scholar</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { icon: GraduationCap, title: 'PhD, Telugu Literature', desc: 'Specializing in modern poetry and the cultural shift of the 1940s-60s.' },
-            { icon: School, title: 'JNV Mentorship', desc: 'Decades of shaping young minds in Jawahar Navodaya Vidyalayas across regions.' },
-            { icon: History, title: 'Media Evolution', desc: 'From the precision of print newsrooms to the viral impact of YouTube journalism.' }
-          ].map((item, idx) => (
-            <div key={idx} className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-all group dark:bg-slate-900 dark:border-slate-800">
-              <div className="bg-slate-50 p-4 rounded-2xl w-fit mb-6 text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors dark:bg-slate-950"><item.icon size={32} /></div>
-              <h3 className="text-xl font-black mb-3 uppercase tracking-tighter dark:text-white">{item.title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed dark:text-slate-400">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    {/* Awards Restored */}
-    <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-center">
-        <div className="flex-1">
-          <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
-          <div className="flex gap-6 items-start mb-8 bg-slate-50 p-8 rounded-[2rem] border border-slate-100 shadow-sm dark:bg-slate-950 dark:border-slate-800">
-            <div className="bg-amber-100 p-4 rounded-2xl text-amber-600 flex-shrink-0 dark:bg-amber-900/20"><Award size={32} /></div>
-            <div>
-              <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.nandiTitle}</h4>
-              <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.nandiText}</p>
-            </div>
-          </div>
-          <div className="flex gap-6 items-start bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100 border-dashed dark:bg-slate-950/50 dark:border-slate-800">
-            <div className="bg-slate-200 p-4 rounded-2xl text-slate-600 flex-shrink-0 dark:bg-slate-800"><Star size={32} /></div>
-            <div>
-              <h4 className="font-black text-xl uppercase tracking-tight dark:text-white">{data.samratTitle}</h4>
-              <p className="text-slate-500 text-sm mt-2 leading-relaxed dark:text-slate-400">{data.samratText}</p>
-            </div>
-          </div>
-        </div>
-        <div className="w-full md:w-96 h-96 bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-center justify-center p-12 text-center text-white relative overflow-hidden group">
-           <Award className="w-24 h-24 text-amber-500 mb-6 z-10 transition-transform group-hover:scale-110" />
-           <p className="font-black text-3xl uppercase tracking-tighter z-10 leading-none">Nandi Awardee</p>
-           <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3 z-10">Literary Excellence</p>
-           <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
-        </div>
-      </div>
-    </section>
-
-    {/* Global Gallery Refactor */}
-    <section className="py-24 bg-slate-50 px-4 dark:bg-slate-950">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-end mb-12">
-           <div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
-              <p className="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
-           </div>
-           <div className="hidden md:flex gap-2 text-slate-400">
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronLeft size={16}/></div>
-              <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronRight size={16}/></div>
-           </div>
-        </div>
-        
-        <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible">
-          {(data.gallery || []).map((item, i) => (
-            <div key={i} className="flex-shrink-0 w-[85%] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
-              <img src={item.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.label} />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
-                <div>
-                   <p className="text-white text-[10px] font-black uppercase tracking-widest mb-1 opacity-60">Moment</p>
-                   <span className="text-white text-lg font-black uppercase tracking-tighter italic">{item.label}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  </div>
-);
 
 const WorkDetailView = ({ work, onBack }) => {
   const workTypes = [].concat(work.type);
@@ -1253,6 +1392,30 @@ const CreatorStudio = ({
                  </div>
                  <InputField label="Philosophy Quote" value={homeForm.philosophyQuote} onChange={e => setHomeForm({...homeForm, philosophyQuote: e.target.value})} />
                  <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" placeholder="Philosophy details..." value={homeForm.philosophyText} onChange={e => setHomeForm({...homeForm, philosophyText: e.target.value})} />
+
+                  <h3 className="text-xs font-black uppercase tracking-widest text-red-600 pb-2 border-b border-red-600/10">Academic Roots</h3>
+                  <div className="space-y-6">
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Education Background (Markdown)</label>
+                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsEducation || ''} onChange={e => setHomeForm({...homeForm, rootsEducation: e.target.value})} />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Literature Experience (Markdown)</label>
+                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsLiterature || ''} onChange={e => setHomeForm({...homeForm, rootsLiterature: e.target.value})} />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Media Experience (Markdown)</label>
+                        <textarea className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-32 shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.rootsExperience || ''} onChange={e => setHomeForm({...homeForm, rootsExperience: e.target.value})} />
+                     </div>
+                     <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Featured Work (Education Link)</label>
+                        <select className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none shadow-inner text-sm dark:bg-slate-950 dark:text-white" value={homeForm.featuredWorkId || ''} onChange={e => setHomeForm({...homeForm, featuredWorkId: e.target.value})}>
+                          <option value="">Select a work to link...</option>
+                          {works.map(w => <option key={w.id} value={w.id}>{w.title}</option>)}
+                        </select>
+                     </div>
+                  </div>
+
                  
                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4">
                     <InputField label="Gallery 1 (Studio)" value={homeForm.gallery1} onChange={e => setHomeForm({...homeForm, gallery1: e.target.value})} />
