@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Helmet } from 'react-helmet-async';
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -145,7 +144,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   }, [overlayIndex]);
 
   return (
-    <div className="animate-in fade-in duration-700">
+    <div className="animate-in fade-in duration-700 overflow-x-hidden">
       <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="max-w-4xl">
@@ -359,21 +358,24 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       {/* Awards & Honors Enhanced */}
       <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 md:mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 md:mb-16 px-4">
+            <div className="flex-1">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+              <div className="w-12 h-1 bg-red-600 mt-2 md:hidden" />
+            </div>
             <div className="flex gap-2">
               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronLeft size={14} /></div>
               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronRight size={14} /></div>
             </div>
           </div>
           <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-stretch mb-16">
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 overflow-hidden">
               
               {/* Award Carousel Relocated Here */}
               <div className="relative group/carousel">
-                <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory">
+                <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory px-4">
                   {hasAwards ? awards.filter(Boolean).map((award, idx) => (
-                    <div key={idx} className="flex-shrink-0 w-[220px] md:w-[280px] snap-center">
+                    <div key={idx} className="flex-shrink-0 w-[200px] md:w-[280px] snap-center">
                       <div className="bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800 group h-full shadow-sm hover:shadow-xl transition-all">
                         <div 
                           className="aspect-[4/3] overflow-hidden cursor-pointer relative bg-slate-200 dark:bg-slate-900"
@@ -410,10 +412,10 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-80 h-[400px] md:h-[450px] bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl flex flex-col items-stretch justify-start text-center text-white relative overflow-hidden group border border-slate-800 shrink-0">
-              <div className="w-full h-[55%] relative overflow-hidden bg-slate-800">
+            <div className="w-[280px] md:w-80 h-[450px] bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl flex flex-col items-stretch justify-start text-center text-white relative overflow-hidden group border border-slate-800 shrink-0 mx-auto md:mx-0">
+              <div className="w-full h-[65%] relative overflow-hidden bg-slate-800">
                 {data.nandiImageUrl ? (
-                  <img src={data.nandiImageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Nandi Award" />
+                  <img src={data.nandiImageUrl} className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110" alt="Nandi Award" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-700">
                     <ImageIcon size={48} />
@@ -501,9 +503,9 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       )}
 
       {/* Global Gallery Refactor */}
-      <section className="py-20 md:py-24 bg-slate-50 px-4 dark:bg-slate-950 overflow-hidden">
+      <section className="py-20 md:py-24 bg-slate-50 px-0 md:px-4 dark:bg-slate-950 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 px-4">
             <div>
               <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
               <p className="text-[9px] md:text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
@@ -514,9 +516,9 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
             </div>
           </div>
 
-          <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible">
+          <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible px-4">
             {(data.gallery || []).map((item, i) => (
-              <div key={i} className="flex-shrink-0 w-[85%] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
+              <div key={i} className="flex-shrink-0 w-[260px] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
                 <img src={item.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.label} />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
                   <div>
@@ -533,46 +535,67 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   );
 };
 
-// SEO Component
+// SEO Component (Native Implementation)
 const SEO = ({ tab }) => {
-  const titles = {
-    home: "Pramu Talks | Official Dr. Prasada Murthy Archive",
-    archive: "Pramu Talks | Literary Archive & Work",
-    research: "Pramu Talks | Research Lab",
-    studio: "Pramu Talks | Creator Studio"
-  };
+  useEffect(() => {
+    const titles = {
+      home: "Pramu Talks | Official Dr. Prasada Murthy Archive",
+      archive: "Pramu Talks | Literary Archive & Work",
+      research: "Pramu Talks | Research Lab",
+      studio: "Pramu Talks | Creator Studio"
+    };
 
-  const descriptions = {
-    home: "The digital legacy of Dr. Prasada Murthy. Nandi Award-winning journalist and poet exploring the intersection of literature and social responsibility.",
-    archive: "Explore books, essays, and critical reviews by Dr. Prasada Murthy. A comprehensive collection of modern Telugu literature.",
-    research: "AI-powered research assistant for deep literary analysis and news grounding using Gemini 3 Flash.",
-    studio: "Administrative management portal for the Pramu Talks official archive."
-  };
+    const descriptions = {
+      home: "The digital legacy of Dr. Prasada Murthy. Nandi Award-winning journalist and poet exploring the intersection of literature and social responsibility.",
+      archive: "Explore books, essays, and critical reviews by Dr. Prasada Murthy. A comprehensive collection of modern Telugu literature.",
+      research: "AI-powered research assistant for deep literary analysis and news grounding using Gemini 3 Flash.",
+      studio: "Administrative management portal for the Pramu Talks official archive."
+    };
 
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": "Dr. Prasada Murthy",
-    "jobTitle": ["Journalist", "Poet", "Scholar"],
-    "award": "Nandi Award",
-    "url": "https://pramu-talks.web.app/",
-    "description": descriptions.home,
-    "sameAs": [
-      "https://www.youtube.com/@pramutalks"
-    ]
-  };
+    const activeTitle = titles[tab] || titles.home;
+    const activeDesc = descriptions[tab] || descriptions.home;
 
-  return (
-    <Helmet>
-      <title>{titles[tab] || titles.home}</title>
-      <meta name="description" content={descriptions[tab] || descriptions.home} />
-      <meta property="og:title" content={titles[tab] || titles.home} />
-      <meta property="og:description" content={descriptions[tab] || descriptions.home} />
-      <script type="application/ld+json">
-        {JSON.stringify(schemaData)}
-      </script>
-    </Helmet>
-  );
+    // Update Title
+    document.title = activeTitle;
+
+    // Update Meta Tags
+    const updateMeta = (name, content, attr = 'name') => {
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+
+    updateMeta('description', activeDesc);
+    updateMeta('og:title', activeTitle, 'property');
+    updateMeta('og:description', activeDesc, 'property');
+
+    // Update JSON-LD Structured Data
+    let scriptEl = document.getElementById('json-ld-seo');
+    if (!scriptEl) {
+      scriptEl = document.createElement('script');
+      scriptEl.id = 'json-ld-seo';
+      scriptEl.type = 'application/ld+json';
+      document.head.appendChild(scriptEl);
+    }
+    
+    const schemaData = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Dr. Prasada Murthy",
+      "jobTitle": ["Journalist", "Poet", "Scholar"],
+      "award": "Nandi Award",
+      "url": "https://pramu-talks.web.app/",
+      "description": descriptions.home,
+      "sameAs": ["https://www.youtube.com/@pramutalks"]
+    };
+    scriptEl.text = JSON.stringify(schemaData);
+  }, [tab]);
+
+  return null; // This component doesn't render anything to the DOM
 };
 
 const App = () => {
