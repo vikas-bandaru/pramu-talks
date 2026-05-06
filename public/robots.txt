@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pramu-talks.web.app/sitemap.xml

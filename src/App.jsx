@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Helmet } from 'react-helmet-async';
 
 import { initializeApp } from 'firebase/app';
 import {
@@ -532,6 +533,47 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   );
 };
 
+// SEO Component
+const SEO = ({ tab }) => {
+  const titles = {
+    home: "Pramu Talks | Official Dr. Prasada Murthy Archive",
+    archive: "Pramu Talks | Literary Archive & Work",
+    research: "Pramu Talks | Research Lab",
+    studio: "Pramu Talks | Creator Studio"
+  };
+
+  const descriptions = {
+    home: "The digital legacy of Dr. Prasada Murthy. Nandi Award-winning journalist and poet exploring the intersection of literature and social responsibility.",
+    archive: "Explore books, essays, and critical reviews by Dr. Prasada Murthy. A comprehensive collection of modern Telugu literature.",
+    research: "AI-powered research assistant for deep literary analysis and news grounding using Gemini 3 Flash.",
+    studio: "Administrative management portal for the Pramu Talks official archive."
+  };
+
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Dr. Prasada Murthy",
+    "jobTitle": ["Journalist", "Poet", "Scholar"],
+    "award": "Nandi Award",
+    "url": "https://pramu-talks.web.app/",
+    "description": descriptions.home,
+    "sameAs": [
+      "https://www.youtube.com/@pramutalks"
+    ]
+  };
+
+  return (
+    <Helmet>
+      <title>{titles[tab] || titles.home}</title>
+      <meta name="description" content={descriptions[tab] || descriptions.home} />
+      <meta property="og:title" content={titles[tab] || titles.home} />
+      <meta property="og:description" content={descriptions[tab] || descriptions.home} />
+      <script type="application/ld+json">
+        {JSON.stringify(schemaData)}
+      </script>
+    </Helmet>
+  );
+};
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -812,6 +854,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-red-100 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-500">
+      <SEO tab={activeTab} />
       {systemStatus.message && (
         <div className={`fixed top-16 left-0 right-0 z-[60] px-4 py-2 text-center text-[10px] font-black uppercase tracking-widest animate-in slide-in-from-top duration-300 ${systemStatus.type === 'error' ? 'bg-red-600 text-white' : 'bg-amber-500 text-slate-900'}`}>
           <span className="flex items-center justify-center gap-2"><AlertCircle size={12} /> {systemStatus.message}</span>
