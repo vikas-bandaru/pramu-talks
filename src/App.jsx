@@ -146,50 +146,50 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
 
   return (
     <div className="animate-in fade-in duration-700">
-      <section className="bg-slate-900 text-white py-32 relative overflow-hidden dark:bg-slate-950">
+      <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
-            <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[0.9] tracking-tight uppercase">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black mb-6 md:mb-8 leading-[0.9] tracking-tight uppercase">
               <ReactMarkdown components={{ p: ({ node, ...props }) => <React.Fragment {...props} />, strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
             </h1>
-            <p className="text-xl text-slate-400 mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
-            <div className="flex flex-wrap gap-5">
-              <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
-              <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95">The Archive</button>
+            <p className="text-lg md:text-xl text-slate-400 mb-8 md:mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
+            <div className="flex flex-wrap gap-4 md:gap-5">
+              <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
+              <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all active:scale-95">The Archive</button>
             </div>
           </div>
         </div>
-        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20" alt="" />}
-        <div className="absolute -bottom-48 -right-48 w-[800px] h-[800px] bg-red-600/5 blur-[120px] rounded-full" />
+        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" alt="" />}
+        <div className="absolute -bottom-48 -right-48 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-red-600/5 blur-[80px] md:blur-[120px] rounded-full" />
       </section>
 
       {/* Philosophy */}
-      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-16 items-center">
           <div>
-            <h2 className="text-4xl font-black mb-6 uppercase tracking-tighter dark:text-white">{data.philosophyTitle}</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-6 uppercase tracking-tighter dark:text-white">{data.philosophyTitle}</h2>
             <div className="w-12 h-1 bg-red-600 mb-8" />
-            <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-6 dark:text-slate-300">"{data.philosophyQuote}"</p>
-            <p className="text-slate-500 leading-relaxed dark:text-slate-400">{data.philosophyText}</p>
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium italic mb-6 dark:text-slate-300">"{data.philosophyQuote}"</p>
+            <p className="text-slate-500 leading-relaxed dark:text-slate-400 text-sm md:text-base">{data.philosophyText}</p>
           </div>
-          <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-100 flex flex-col items-center justify-center text-center dark:bg-slate-950 dark:border-slate-800">
-            <BookOpen className="w-16 h-16 text-red-600 mb-4" />
-            <p className="text-2xl font-black text-slate-900 uppercase dark:text-white">{data.philosophyAccent}</p>
-            <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Sri Sri's Eternal Inspiration</p>
+          <div className="bg-slate-50 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 border border-slate-100 flex flex-col items-center justify-center text-center dark:bg-slate-950 dark:border-slate-800">
+            <BookOpen className="w-12 h-12 md:w-16 md:h-16 text-red-600 mb-4" />
+            <p className="text-xl md:text-2xl font-black text-slate-900 uppercase dark:text-white">{data.philosophyAccent}</p>
+            <p className="text-[9px] md:text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Sri Sri's Eternal Inspiration</p>
           </div>
         </div>
       </section>
 
       {/* Academic Roots */}
-      <section className="py-24 bg-slate-50 px-4 border-b border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+      <section className="py-20 md:py-24 bg-slate-50 px-4 border-b border-slate-100 dark:bg-slate-950 dark:border-slate-800 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter dark:text-white">Intellectual Foundations</h2>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">A Synthesis of Academia, Media, and Literary Excellence</p>
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl font-black mb-4 uppercase tracking-tighter dark:text-white">Intellectual Foundations</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] md:text-xs">A Synthesis of Academia, Media, and Literary Excellence</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-red-600/5 blur-[60px] md:blur-[120px] rounded-full pointer-events-none" />
             {[
               {
                 id: 'edu',
@@ -307,12 +307,12 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       </section>
 
       {/* About Section */}
-      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-start">
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 md:gap-16 items-start">
           <div className="flex-1">
-            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
-            <div className="prose prose-lg dark:prose-invert max-w-none">
-              <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-10 dark:text-slate-300">
+            <h2 className="text-3xl md:text-4xl font-black mb-6 md:mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
+            <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium italic mb-8 md:mb-10 dark:text-slate-300">
                 "A distinguished public intellectual, celebrated poet, and veteran journalist whose career spans over four decades of scholarly and cultural discourse."
               </p>
               <div className="space-y-6 text-slate-500 dark:text-slate-400 leading-relaxed text-lg">
@@ -329,7 +329,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
             </div>
           </div>
           {/* Featured Profile Card in About Section */}
-          <div className="w-full md:w-80 bg-slate-900 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden group border border-slate-800">
+          <div className="w-full md:w-80 bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-slate-800">
             <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
             <div className="relative z-10">
               <div className="bg-red-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20">
@@ -357,23 +357,23 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       </section>
 
       {/* Awards & Honors Enhanced */}
-      <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-16 items-center mb-16">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+            <div className="flex gap-2">
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronLeft size={14} /></div>
+              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronRight size={14} /></div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-stretch mb-16">
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
-                <div className="flex gap-2">
-                  <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronLeft size={14} /></div>
-                  <div className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800"><ChevronRight size={14} /></div>
-                </div>
-              </div>
               
               {/* Award Carousel Relocated Here */}
               <div className="relative group/carousel">
                 <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar snap-x snap-mandatory">
                   {hasAwards ? awards.filter(Boolean).map((award, idx) => (
-                    <div key={idx} className="flex-shrink-0 w-[240px] md:w-[280px] snap-center">
+                    <div key={idx} className="flex-shrink-0 w-[220px] md:w-[280px] snap-center">
                       <div className="bg-slate-50 rounded-[2rem] overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800 group h-full shadow-sm hover:shadow-xl transition-all">
                         <div 
                           className="aspect-[4/3] overflow-hidden cursor-pointer relative bg-slate-200 dark:bg-slate-900"
@@ -410,7 +410,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
                 </div>
               </div>
             </div>
-            <div className="w-full md:w-80 h-[450px] bg-slate-900 rounded-[3rem] shadow-2xl flex flex-col items-stretch justify-start text-center text-white relative overflow-hidden group border border-slate-800 shrink-0">
+            <div className="w-full md:w-80 h-[400px] md:h-[450px] bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] shadow-2xl flex flex-col items-stretch justify-start text-center text-white relative overflow-hidden group border border-slate-800 shrink-0">
               <div className="w-full h-[55%] relative overflow-hidden bg-slate-800">
                 {data.nandiImageUrl ? (
                   <img src={data.nandiImageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Nandi Award" />
@@ -501,12 +501,12 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       )}
 
       {/* Global Gallery Refactor */}
-      <section className="py-24 bg-slate-50 px-4 dark:bg-slate-950">
+      <section className="py-20 md:py-24 bg-slate-50 px-4 dark:bg-slate-950 overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
             <div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
-              <p className="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
+              <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">Moments in Media</h2>
+              <p className="text-[9px] md:text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">Visual Chronicles</p>
             </div>
             <div className="hidden md:flex gap-2 text-slate-400">
               <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center dark:border-slate-800"><ChevronLeft size={16} /></div>
@@ -1538,10 +1538,10 @@ const CreatorStudio = ({
       </div>
 
       {studioTab === 'video' && (
-        <div className="bg-white rounded-[3rem] shadow-2xl p-8 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+        <div className="bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-6 md:p-14 border border-slate-100 relative overflow-hidden dark:bg-slate-900 dark:border-slate-800">
           {showSuccess && <div className="absolute top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-2xl font-black text-xs animate-in slide-in-from-right">Playlist Updated</div>}
-          <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Video className="text-red-600" /> Video Manager</h2>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-10">Curate featured videos for the Trending Now section.</p>
+          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter flex items-center gap-4 mb-4 dark:text-white"><Video className="text-red-600" /> Video Manager</h2>
+          <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-10">Curate featured videos for the Trending Now section.</p>
 
           <div className="space-y-12">
             <div className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 shadow-inner">
