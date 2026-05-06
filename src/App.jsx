@@ -310,17 +310,17 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       <section className="py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-16 items-start">
           <div className="flex-1">
-            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murty</h2>
+            <h2 className="text-4xl font-black mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <p className="text-xl text-slate-600 leading-relaxed font-medium italic mb-10 dark:text-slate-300">
                 "A distinguished public intellectual, celebrated poet, and veteran journalist whose career spans over four decades of scholarly and cultural discourse."
               </p>
               <div className="space-y-6 text-slate-500 dark:text-slate-400 leading-relaxed text-lg">
                 <p>
-                  <strong>Dr. Bandaru Rama Vara Prasada Murty</strong>, widely recognized as <strong>Dr. Prasada Murty</strong>, was born on January 5, 1960, in Nidamarru, Andhra Pradesh. He is a formidable scholar of language and culture, holding an M.A. in Telugu, an M.A. in English, and a Ph.D. in Telugu Literature.
+                  <strong>Dr. Bandaru Rama Vara Prasada Murthy</strong>, widely recognized as <strong>Dr. Prasada Murthy</strong>, was born on January 5, 1960, in Nidamarru, Andhra Pradesh. He is a formidable scholar of language and culture, holding an M.A. in Telugu, an M.A. in English, and a Ph.D. in Telugu Literature.
                 </p>
                 <p>
-                  With over 20 years of leadership in digital and print journalism, Dr. Murty has worked with prominent media outlets, earning widespread acclaim for his insightful commentary. In 2008, his dedication to Telugu heritage was honored with two prestigious <strong>Nandi Awards</strong> for his definitive documentary on the legendary poet <strong>Sri Sri</strong>.
+                  With over 20 years of leadership in digital and print journalism, Dr. Murthy has worked with prominent media outlets, earning widespread acclaim for his insightful commentary. In 2008, his dedication to Telugu heritage was honored with two prestigious <strong>Nandi Awards</strong> for his definitive documentary on the legendary poet <strong>Sri Sri</strong>.
                 </p>
                 <p>
                   A prolific author, he has published 19 poetry collections, a short story book, and a seminal Ph.D. thesis. Beyond his literary achievements, he is a passionate advocate for social justice, secularism, and human rights. Today, through his independent YouTube channel, <strong>"Pramu Talks,"</strong> he continues to inspire audiences by promoting rational thinking and progressive values across India.
@@ -335,7 +335,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
               <div className="bg-red-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20">
                 <Star size={24} />
               </div>
-              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murty</h4>
+              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murthy</h4>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet & Journalist</p>
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2">
