@@ -1203,6 +1203,45 @@ const CreatorStudio = ({
   useEffect(() => { setHomeForm(homeData); }, [homeData]);
   useEffect(() => { setSystemForm(systemConfig); }, [systemConfig]);
 
+  // --- Drag and Drop Handlers ---
+  const handleGenericDragStart = (e, index, type) => {
+    e.dataTransfer.setData('draggedIndex', index);
+    e.dataTransfer.setData('draggedType', type);
+    e.currentTarget.classList.add('opacity-40');
+  };
+
+  const handleGenericDragEnd = (e) => {
+    e.currentTarget.classList.remove('opacity-40');
+  };
+
+  const handleGenericDragOver = (e) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('bg-red-50', 'dark:bg-red-900/10', 'ring-2', 'ring-red-500/20');
+  };
+
+  const handleGenericDragLeave = (e) => {
+    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10', 'ring-2', 'ring-red-500/20');
+  };
+
+  const handleGenericDrop = (e, targetIndex, type) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('bg-red-50', 'dark:bg-red-900/10', 'ring-2', 'ring-red-500/20');
+
+    const draggedIndexString = e.dataTransfer.getData('draggedIndex');
+    const draggedType = e.dataTransfer.getData('draggedType');
+
+    if (!draggedIndexString || draggedType !== type) return;
+    const draggedIndex = parseInt(draggedIndexString);
+    if (draggedIndex === targetIndex) return;
+
+    const listKey = type === 'award' ? 'awardsGallery' : 'gallery';
+    const newList = [...(homeForm[listKey] || [])];
+    const [movedItem] = newList.splice(draggedIndex, 1);
+    newList.splice(targetIndex, 0, movedItem);
+
+    setHomeForm({ ...homeForm, [listKey]: newList });
+  };
+
   const apiKey = systemConfig.geminiApiKey || geminiApiKey;
 
   const extractYTThumbnail = (url) => {
@@ -1643,7 +1682,19 @@ const CreatorStudio = ({
 
               <div className="space-y-4">
                 {(homeForm.awardsGallery || []).map((award, idx) => (
-                  <div key={idx} className="group flex flex-col md:flex-row gap-6 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 relative transition-all hover:shadow-lg">
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={(e) => handleGenericDragStart(e, idx, 'award')}
+                    onDragEnd={handleGenericDragEnd}
+                    onDragOver={handleGenericDragOver}
+                    onDragLeave={handleGenericDragLeave}
+                    onDrop={(e) => handleGenericDrop(e, idx, 'award')}
+                    className="group flex flex-col md:flex-row gap-6 p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 dark:bg-slate-950 dark:border-slate-800 relative transition-all hover:shadow-lg cursor-grab active:cursor-grabbing"
+                  >
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity hidden md:block">
+                      <MoveVertical size={20} />
+                    </div>
                     <div className="w-full md:w-32 aspect-square bg-slate-200 rounded-2xl overflow-hidden relative flex-shrink-0">
                       {award.url ? <img src={award.url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-400"><ImageIcon size={24} /></div>}
                       <button type="button" onClick={() => {
@@ -1739,7 +1790,16 @@ const CreatorStudio = ({
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {(homeForm.gallery || []).map((moment, idx) => (
-                  <div key={idx} className="group relative aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800">
+                  <div
+                    key={idx}
+                    draggable
+                    onDragStart={(e) => handleGenericDragStart(e, idx, 'moment')}
+                    onDragEnd={handleGenericDragEnd}
+                    onDragOver={handleGenericDragOver}
+                    onDragLeave={handleGenericDragLeave}
+                    onDrop={(e) => handleGenericDrop(e, idx, 'moment')}
+                    className="group relative aspect-square bg-slate-50 rounded-2xl overflow-hidden border border-slate-100 dark:bg-slate-950 dark:border-slate-800 cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-red-500 transition-all"
+                  >
                     <img src={moment.url} className="w-full h-full object-cover" alt="" />
                     <div className="absolute inset-x-0 bottom-0 bg-slate-900/80 p-2 backdrop-blur-sm">
                       <p className="text-[8px] text-white font-bold truncate uppercase">{moment.label}</p>
