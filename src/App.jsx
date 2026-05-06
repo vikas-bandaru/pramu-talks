@@ -417,7 +417,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
               )}
               <div className="relative z-10 flex flex-col items-center">
                 <Award className="w-20 h-20 text-amber-500 mb-6 transition-transform group-hover:scale-110" />
-                <p className="font-black text-3xl uppercase tracking-tighter leading-none">Nandi Awardee</p>
+                <p className="font-black text-3xl uppercase tracking-tighter leading-none">{data.nandiTitle || "Nandi Awardee"}</p>
                 <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-3">Literary Excellence</p>
                 {data.nandiText && <p className={`text-slate-500 text-[10px] mt-6 leading-relaxed max-w-[200px] transition-opacity duration-500 ${data.nandiImageUrl ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>{data.nandiText}</p>}
               </div>
@@ -1187,7 +1187,10 @@ const CreatorStudio = ({
   const [managerSearch, setManagerSearch] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [isFetching, setIsFetching] = useState(false);
+  const [fetchingCount, setFetchingCount] = useState(0);
+  const isFetching = isVideoLoading || fetchingCount > 0;
+  const startLoading = () => setFetchingCount(prev => prev + 1);
+  const stopLoading = () => setFetchingCount(prev => Math.max(0, prev - 1));
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -1199,6 +1202,8 @@ const CreatorStudio = ({
 
   const [homeForm, setHomeForm] = useState(homeData);
   const [systemForm, setSystemForm] = useState(systemConfig);
+  const [uploadingItem, setUploadingItem] = useState(null);
+  const [successItem, setSuccessItem] = useState(null);
 
   useEffect(() => { setHomeForm(homeData); }, [homeData]);
   useEffect(() => { setSystemForm(systemConfig); }, [systemConfig]);
@@ -1242,6 +1247,94 @@ const CreatorStudio = ({
     setHomeForm({ ...homeForm, [listKey]: newList });
   };
 
+  const uploadImage = async (file, folder) => {
+    startLoading();
+    
+    return new Promise((resolve, reject) => {
+      const cleanup = () => stopLoading();
+      
+      // Safety timeout (45 seconds - increased for larger files)
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Upload timed out after 45 seconds. Please try a smaller file or check your connection."));
+      }, 45000);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Optimized Resizing (1600px max)
+            const MAX_DIM = 1600; 
+            if (width > height) {
+              if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+            } else {
+              if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // High-quality downscaling
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Convert to Blob with 0.85 quality (Great balance of size/quality)
+            canvas.toBlob(async (blob) => {
+              if (!blob) { 
+                clearTimeout(timeout);
+                cleanup();
+                reject(new Error("Failed to process image blob.")); 
+                return; 
+              }
+              
+              try {
+                // Sanitize filename
+                const safeName = file.name.replace(/[^a-z0-9.]/gi, '_').toLowerCase();
+                const fileName = `${Date.now()}_${safeName}`;
+                const storageRef = ref(storage, `artifacts/${appId}/images/${folder}/${fileName}`);
+                
+                const snapshot = await uploadBytes(storageRef, blob);
+                const url = await getDownloadURL(snapshot.ref);
+                
+                clearTimeout(timeout);
+                cleanup();
+                resolve(url);
+              } catch (err) {
+                console.error("Firebase Storage Error:", err);
+                clearTimeout(timeout);
+                cleanup();
+                reject(err);
+              }
+            }, 'image/jpeg', 0.85);
+          } catch (err) {
+            clearTimeout(timeout);
+            cleanup();
+            reject(err);
+          }
+        };
+        img.onerror = () => {
+          clearTimeout(timeout);
+          cleanup();
+          reject(new Error("The image file is corrupted or not a valid format."));
+        };
+        img.src = event.target.result;
+      };
+      reader.onerror = () => {
+        clearTimeout(timeout);
+        cleanup();
+        reject(new Error("Failed to read the file."));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const apiKey = systemConfig.geminiApiKey || geminiApiKey;
 
   const extractYTThumbnail = (url) => {
@@ -1259,7 +1352,7 @@ const CreatorStudio = ({
   const fetchMetadataFromLink = async () => {
     const targetUrl = form.link || form.purchaseLink || form.youtubeLink;
     if (!targetUrl || !apiKey) return;
-    setIsFetching(true);
+    startLoading();
     const prompt = `Visit URL: ${targetUrl}. Extract featured image URL and headline. Return raw JSON with keys: title, image_url.`;
     try {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
@@ -1273,12 +1366,12 @@ const CreatorStudio = ({
       const result = await response.json();
       const data = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
       setForm(prev => ({ ...prev, title: data.title || prev.title, thumbnail: data.image_url || prev.thumbnail }));
-    } catch (err) { console.error("Sync failed:", err); } finally { setIsFetching(false); }
+    } catch (err) { console.error("Sync failed:", err); } finally { stopLoading(); }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsFetching(true);
+    startLoading();
 
     // Clean data based on type
     const cleanedData = { ...form, type: activeTypes };
@@ -1291,7 +1384,7 @@ const CreatorStudio = ({
       result = await onAdd(cleanedData);
     }
 
-    setIsFetching(false);
+    stopLoading();
     if (result && result.success) {
       setEditingId(null);
       setForm({ title: '', thumbnail: '', brief: '', pubYear: '', pubMonth: '', purchaseLink: '', awards: '', link: '', magazine: '', sourceName: '', availableAt: '', rating: '', youtubeLink: '', bookLink: '', pdfUrl: '', audioUrl: '' });
@@ -1346,7 +1439,7 @@ const CreatorStudio = ({
       return;
     }
 
-    setIsFetching(true);
+    startLoading();
     try {
       const storageRef = ref(storage, `artifacts/${appId}/${type}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
@@ -1359,7 +1452,7 @@ const CreatorStudio = ({
       console.error("Upload failed:", err);
       alert("Upload failed. Please check your connection.");
     } finally {
-      setIsFetching(false);
+      stopLoading();
     }
   };
 
@@ -1470,56 +1563,20 @@ const CreatorStudio = ({
                     <button type="button" onClick={() => fileInputRef.current.click()} className="p-3 bg-white text-slate-900 rounded-xl font-black text-[10px] uppercase">Upload</button>
                     <button type="button" onClick={fetchMetadataFromLink} disabled={isFetching} className="p-3 bg-red-600 text-white rounded-xl font-black text-[10px] uppercase">Sync</button>
                   </div>
-                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => {
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
-
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      const img = new Image();
-                      img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        // Limit dimensions to 1200px max
-                        const MAX_DIM = 1200;
-                        if (width > height) {
-                          if (width > MAX_DIM) {
-                            height *= MAX_DIM / width;
-                            width = MAX_DIM;
-                          }
-                        } else {
-                          if (height > MAX_DIM) {
-                            width *= MAX_DIM / height;
-                            height = MAX_DIM;
-                          }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // Iteratively compress if needed (target < 800KB)
-                        let quality = 0.8;
-                        let dataUrl = canvas.toDataURL('image/jpeg', quality);
-
-                        // Approx check: base64 string length / 1.33 = bytes
-                        while (dataUrl.length > 800000 && quality > 0.1) {
-                          quality -= 0.1;
-                          dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        }
-
-                        if (dataUrl.length > 1000000) {
-                          alert("Image is still too large after compression. Please use a smaller image file.");
-                        } else {
-                          setForm(f => ({ ...f, thumbnail: dataUrl }));
-                        }
-                      };
-                      img.src = event.target.result;
-                    };
-                    reader.readAsDataURL(file);
+                    setUploadingItem('work-thumb');
+                    try {
+                      const url = await uploadImage(file, 'works');
+                      setForm(f => ({ ...f, thumbnail: url }));
+                      setSuccessItem('work-thumb');
+                      setTimeout(() => setSuccessItem(null), 3000);
+                    } catch (err) {
+                      alert("Thumbnail upload failed.");
+                    } finally {
+                      setUploadingItem(null);
+                    }
                   }} />
                 </div>
                 <InputField label="Primary URL (Content Link)" name="link" placeholder="YouTube or Article URL" value={form.link} onChange={e => setForm({ ...form, link: e.target.value })} />
@@ -1638,38 +1695,38 @@ const CreatorStudio = ({
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <InputField label="Nandi Awardee Image URL" value={homeForm.nandiImageUrl || ''} onChange={e => setHomeForm({ ...homeForm, nandiImageUrl: e.target.value })} />
-                  <button type="button" onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file'; input.accept = 'image/*';
-                    input.onchange = (e) => {
-                      const file = e.target.files[0];
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                          const canvas = document.createElement('canvas');
-                          const MAX_WIDTH = 1200;
-                          let width = img.width; let height = img.height;
-                          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                          canvas.width = width; canvas.height = height;
-                          const ctx = canvas.getContext('2d');
-                          ctx.drawImage(img, 0, 0, width, height);
-                          
-                          let quality = 0.8;
-                          let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                          // Iteratively compress (target < 500KB for the big card)
-                          while (dataUrl.length > 500000 && quality > 0.1) {
-                            quality -= 0.1;
-                            dataUrl = canvas.toDataURL('image/jpeg', quality);
-                          }
-                          setHomeForm(prev => ({ ...prev, nandiImageUrl: dataUrl }));
-                        };
-                        img.src = event.target.result;
-                      };
-                      reader.readAsDataURL(file);
-                    };
-                    input.click();
-                  }} className="w-full py-3 bg-slate-100 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all dark:bg-slate-950 dark:text-white">Upload Nandi Photo</button>
+                  <input type="file" accept="image/*" className="hidden" id="nandi-upload-input" onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    try {
+                      const url = await uploadImage(file, 'home');
+                      setHomeForm(prev => ({ ...prev, nandiImageUrl: url }));
+                      e.target.value = '';
+                    } catch (err) {
+                      alert("Image upload failed.");
+                    }
+                  }} />
+                  <button 
+                    type="button" 
+                    onClick={() => document.getElementById('nandi-upload-input').click()} 
+                    disabled={uploadingItem === 'nandi'}
+                    className={`w-full py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${successItem === 'nandi' ? 'bg-green-500 text-white' : 'bg-slate-100 dark:bg-slate-950 dark:text-white hover:bg-slate-200'} disabled:opacity-50`}
+                  >
+                    {uploadingItem === 'nandi' ? <Loader2 size={12} className="animate-spin" /> : (successItem === 'nandi' ? <Check size={12} /> : null)}
+                    {uploadingItem === 'nandi' ? 'Uploading...' : (successItem === 'nandi' ? 'Upload Complete' : 'Upload Nandi Photo')}
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <InputField label="Nandi Highlight Title" value={homeForm.nandiTitle || ''} onChange={e => setHomeForm({ ...homeForm, nandiTitle: e.target.value })} />
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">Nandi Highlight Text</label>
+                    <textarea 
+                      className="w-full p-5 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-red-500 font-bold outline-none h-24 shadow-inner text-sm dark:bg-slate-950 dark:text-white" 
+                      value={homeForm.nandiText || ''} 
+                      onChange={e => setHomeForm({ ...homeForm, nandiText: e.target.value })} 
+                      placeholder="Enter award description..."
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1700,38 +1757,32 @@ const CreatorStudio = ({
                       <button type="button" onClick={() => {
                         const input = document.createElement('input');
                         input.type = 'file'; input.accept = 'image/*';
-                        input.onchange = (e) => {
+                        input.onchange = async (e) => {
                           const file = e.target.files[0];
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            const img = new Image();
-                            img.onload = () => {
-                              const canvas = document.createElement('canvas');
-                              const MAX_WIDTH = 800;
-                              let width = img.width; let height = img.height;
-                              if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                              canvas.width = width; canvas.height = height;
-                              const ctx = canvas.getContext('2d');
-                              ctx.drawImage(img, 0, 0, width, height);
-                              
-                              let quality = 0.8;
-                              let dataUrl = canvas.toDataURL('image/jpeg', quality);
-                              // Iteratively compress to ensure it's small (~100KB target for gallery)
-                              while (dataUrl.length > 150000 && quality > 0.1) {
-                                quality -= 0.1;
-                                dataUrl = canvas.toDataURL('image/jpeg', quality);
-                              }
-
-                              const next = [...homeForm.awardsGallery];
-                              next[idx] = { ...next[idx], url: dataUrl };
-                              setHomeForm({ ...homeForm, awardsGallery: next });
-                            };
-                            img.src = event.target.result;
-                          };
-                          reader.readAsDataURL(file);
+                          if (!file) return;
+                          setUploadingItem(`award-${idx}`);
+                          try {
+                            const url = await uploadImage(file, 'awards');
+                            const next = [...homeForm.awardsGallery];
+                            next[idx] = { ...next[idx], url: url };
+                            setHomeForm({ ...homeForm, awardsGallery: next });
+                            setSuccessItem(`award-${idx}`);
+                            setTimeout(() => setSuccessItem(null), 3000);
+                          } catch (err) {
+                            alert("Award image upload failed.");
+                          } finally {
+                            setUploadingItem(null);
+                          }
                         };
                         input.click();
-                      }} className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[8px] font-black uppercase">Replace Image</button>
+                      }} className={`absolute inset-0 transition-opacity flex items-center justify-center text-white text-[8px] font-black uppercase ${uploadingItem === `award-${idx}` ? 'bg-slate-900/80 opacity-100' : 'bg-slate-900/40 opacity-0 group-hover:opacity-100'}`}>
+                        {uploadingItem === `award-${idx}` ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <Loader2 size={16} className="animate-spin" />
+                            <span>Uploading...</span>
+                          </div>
+                        ) : (successItem === `award-${idx}` ? 'Complete!' : 'Replace Image')}
+                      </button>
                     </div>
                     
                     <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1812,43 +1863,39 @@ const CreatorStudio = ({
                   </div>
                 ))}
 
-                <button type="button" onClick={() => {
-                  const input = document.createElement('input');
-                  input.type = 'file';
-                  input.accept = 'image/*';
-                  input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      const img = new Image();
-                      img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 1000;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                  <button type="button" onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      setUploadingItem('moment-add');
+                      try {
+                        const url = await uploadImage(file, 'gallery');
                         const label = prompt("Enter a label for this moment (e.g. Studio, Event):") || "Media Moment";
-                        setHomeForm(prev => ({ ...prev, gallery: [...(prev.gallery || []), { url: compressed, label }] }));
-                      };
-                      img.src = event.target.result;
+                        setHomeForm(prev => ({ ...prev, gallery: [...(prev.gallery || []), { url, label }] }));
+                      } catch (err) {
+                        alert("Gallery upload failed.");
+                      } finally {
+                        setUploadingItem(null);
+                      }
                     };
-                    reader.readAsDataURL(file);
-                  };
-                  input.click();
-                }} className="aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 hover:border-red-600 hover:text-red-600 transition-all cursor-pointer dark:border-slate-800">
-                  <Plus size={24} />
-                  <span className="text-[8px] font-black uppercase mt-2">Add Moment</span>
-                </button>
+                    input.click();
+                  }} className="aspect-square border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 hover:border-red-600 hover:text-red-600 transition-all cursor-pointer dark:border-slate-800 disabled:opacity-50" disabled={uploadingItem === 'moment-add'}>
+                    {uploadingItem === 'moment-add' ? <Loader2 size={24} className="animate-spin" /> : <Plus size={24} />}
+                    <span className="text-[8px] font-black uppercase mt-2">{uploadingItem === 'moment-add' ? 'Uploading...' : 'Add Moment'}</span>
+                  </button>
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-2xl shadow-red-600/20 hover:bg-red-700 transition-all flex items-center justify-center gap-3">
-              <CheckCircle2 size={18} />
-              Save Home Changes
+            <button 
+              type="submit" 
+              disabled={isFetching}
+              className="w-full bg-red-600 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-widest active:scale-95 shadow-2xl shadow-red-600/20 hover:bg-red-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:bg-slate-400 disabled:shadow-none"
+            >
+              {isFetching ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
+              {isFetching ? 'Processing Uploads...' : 'Save Home Changes'}
             </button>
           </form>
         </div>
