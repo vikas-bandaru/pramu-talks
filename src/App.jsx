@@ -1126,7 +1126,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
         {filteredWorks.map(work => {
           const workTypes = [].concat(work.type);
           const isLandscape = (workTypes.includes('review') || workTypes.includes('audiobook')) && (
@@ -1135,16 +1135,16 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
           );
 
           return (
-            <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
-              <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[2rem] overflow-hidden relative mb-6 dark:bg-slate-950`}>
+            <div key={work.id} onClick={() => onSelect(work)} className="group bg-white p-2 md:p-3 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-2xl transition-all flex flex-col dark:bg-slate-900 dark:border-slate-800 cursor-pointer">
+              <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden relative mb-4 md:mb-6 dark:bg-slate-950`}>
                 <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
                 <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">
                   {[].concat(work.type).join(' / ')}
                 </div>
                 {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
               </div>
-              <div className="px-3 pb-4 flex-1 flex flex-col">
-                <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-10 mb-2 uppercase text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
+              <div className="px-1 md:px-3 pb-2 md:pb-4 flex-1 flex flex-col">
+                <h3 className="font-black text-slate-900 leading-tight line-clamp-2 h-8 md:h-10 mb-2 uppercase text-[10px] md:text-sm tracking-tight dark:text-white uppercase tracking-tighter">{work.title}</h3>
                 <div className="space-y-1 mb-4">
                   {(workTypes.includes('review')) && work.rating && <div className="flex gap-1 text-amber-500"><Star size={10} fill="currentColor" /><span className="text-[9px] font-black">{work.rating}/5 Rating</span></div>}
                   {work.magazine && <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter dark:text-slate-500">{work.magazine}</div>}
@@ -1153,8 +1153,8 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
                 </div>
                 <div className="mt-auto">
                   {(work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink) && (
-                    <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase tracking-widest text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
-                      {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen Now' : 'Access Work'}
+                    <a href={work.pdfUrl || work.audioUrl || work.link || work.purchaseLink || work.youtubeLink} target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white py-2 md:py-3 rounded-lg md:rounded-xl font-black uppercase tracking-widest text-[7px] md:text-[8px] hover:bg-red-600 transition-colors text-center active:scale-95 dark:bg-slate-800 dark:hover:bg-red-600">
+                      {work.pdfUrl ? 'Read PDF' : work.audioUrl ? 'Listen' : 'Access'}
                     </a>
                   )}
                 </div>
