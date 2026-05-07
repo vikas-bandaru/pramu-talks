@@ -95,6 +95,19 @@ service firebase.storage {
    npm run dev
    ```
 
+## 🚀 Roadmap & Future Steps
+The following enhancements are planned for the next evolution of the Pramu Talks Archive:
+
+### 1. The "Ink & Dhamma" Overhaul
+A major redesign of the public view to better reflect Dr. Murthy's complex identity as a revolutionary journalist and Buddhist-influenced poet.
+- **Seven Streams Navigation**: Identity-first navigation categories (Poet, Analyst, Translator, Storyteller, Journalist, Philospher, Voice).
+- **The Living Scroll Archive**: A manuscript-inspired scrolling experience with "Spirit-based" classification (Fire: Revolution, Earth: Prose, Ether: Philosophy, Bridge: Translation).
+- **The Translation Bridge**: Interactive side-by-side UI for viewing his literary translations and original contexts.
+- **Philosophical Pacing**: Subtle, Zen-inspired interstitial sections to provide "meditative pauses" between intense political analysis.
+
+### 2. The Broadcast Mosaic
+Transitioning the media galleries into a high-density, Bento-style grid with TV-broadcast aesthetics and masonry-style layouts.
+
 ---
 **"Literature is not just words on a page; it is the heartbeat of society."**
 © 2026 Pramu Talks. All rights reserved.
