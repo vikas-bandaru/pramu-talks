@@ -99,8 +99,44 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
         {filteredWorks.map((work) => {
           const isBook = work.type?.includes('book');
           const isAudio = work.type?.includes('audiobook');
-          const isPortrait = isBook && !isAudio;
           const isEssayOrStory = work.type?.includes('essay') || work.type?.includes('story');
+          const isReview = work.type?.includes('review');
+          const isMovieReview = isReview && (
+            work.title?.toLowerCase().includes('movie') || 
+            work.title?.toLowerCase().includes('film') || 
+            work.title?.toLowerCase().includes('cinema') ||
+            work.description?.toLowerCase().includes('movie')
+          );
+          
+          const isPortrait = isBook && !isAudio;
+
+          // Helper: Get Meta Label (Bottom Left)
+          const getMetaLabel = () => {
+            if (isAudio) return { label: 'Listen', icon: <Headphones size={12} /> };
+            if (isBook) return null; // No time label for books
+            if (isEssayOrStory) {
+              const text = work.description || work.brief || "";
+              const time = Math.max(3, Math.ceil(text.length / 400));
+              return { label: `${time} min read`, icon: <Timer size={12} /> };
+            }
+            if (isReview) {
+              return isMovieReview 
+                ? { label: 'Watch', icon: <Clock size={12} /> } 
+                : { label: 'Quick Read', icon: <Timer size={12} /> };
+            }
+            return { label: 'Explore', icon: <Timer size={12} /> };
+          };
+
+          // Helper: Get Action Details (Bottom Right)
+          const getAction = () => {
+            if (work.purchaseLink) return { label: 'Get Copy', icon: <ShoppingCart size={14} /> };
+            if (work.pdfUrl) return { label: 'Read PDF', icon: <FileText size={14} /> };
+            if (work.audioUrl) return { label: 'Listen Now', icon: <Headphones size={14} /> };
+            return { label: 'Full Access', icon: <ChevronRight size={14} /> };
+          };
+
+          const meta = getMetaLabel();
+          const action = getAction();
           
           return (
             <div key={work.id} onClick={() => onSelect(work)} className="group bg-white rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer dark:bg-slate-900 dark:border-slate-800 flex flex-col h-full relative">
@@ -113,11 +149,9 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
                 </div>
               )}
 
-              {/* Dynamic Thumbnail Area */}
               <div className={`${isPortrait ? 'aspect-[2/3]' : 'aspect-[16/10]'} overflow-hidden relative bg-slate-100 dark:bg-slate-950`}>
                 <img src={work.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={work.title} />
                 
-                {/* Categories Badge */}
                 <div className="absolute top-3 left-3 flex flex-wrap gap-1">
                   {[].concat(work.type).map((t, idx) => {
                     const category = CATEGORIES.find(c => c.id === t?.trim());
@@ -129,11 +163,10 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
                   })}
                 </div>
 
-                {/* Availability Indicators (Bottom Right) */}
                 <div className="absolute bottom-3 right-3 flex flex-col gap-1.5">
                   {work.purchaseLink && <div className="p-1.5 md:p-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg text-slate-900 hover:scale-110 transition-transform"><ShoppingCart size={10} /></div>}
                   {work.pdfUrl && <div className="p-1.5 md:p-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg text-slate-900 hover:scale-110 transition-transform"><FileText size={10} /></div>}
-                  {isAudio && <div className="p-1.5 md:p-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg text-red-600 hover:scale-110 transition-transform"><Headphones size={10} /></div>}
+                  {work.audioUrl && <div className="p-1.5 md:p-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg text-red-600 hover:scale-110 transition-transform"><Headphones size={10} /></div>}
                 </div>
 
                 {isAdmin && (
@@ -143,16 +176,13 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
                 )}
               </div>
 
-              {/* Card Content */}
               <div className="p-4 md:p-6 flex-1 flex flex-col">
-                {/* Publication Context */}
                 {isEssayOrStory && (work.magazine || work.sourceName) && (
                   <span className="text-[7px] md:text-[9px] font-black text-red-600 uppercase tracking-widest mb-1.5 italic flex items-center gap-1">
                     <Globe size={10} /> {work.magazine || work.sourceName}
                   </span>
                 )}
                 
-                {/* Translation Badge */}
                 {work.isTranslation && (
                   <span className="inline-block bg-slate-100 dark:bg-slate-800 text-slate-500 text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-widest mb-2 w-max">
                     Translation
@@ -166,12 +196,14 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
                 </p>
 
                 <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-50 dark:border-slate-800">
-                  {/* Read/Listen Time */}
                   <div className="flex items-center gap-1 text-[7px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                    <Timer size={10} />
-                    <span>{isBook ? 'Comprehensive' : (isAudio ? 'Listen' : 'Quick Read')}</span>
+                    {meta?.icon}
+                    <span>{meta?.label}</span>
                   </div>
-                  <ChevronRight size={14} className="text-slate-300 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
+                  <div className="flex items-center gap-1.5 text-[7px] md:text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-red-600 transition-colors">
+                    <span>{action.label}</span>
+                    {action.icon}
+                  </div>
                 </div>
               </div>
             </div>
