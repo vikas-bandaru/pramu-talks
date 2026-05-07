@@ -35,13 +35,29 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
   };
 
   const filteredWorks = works.filter(work => {
+    // 1. First, respect the category filter
+    const matchesFilter = !currentFilter || work.type?.includes(currentFilter);
+    if (!matchesFilter) return false;
+
+    // 2. Then, perform the Universal Search
+    if (!searchTerm) return true;
     const s = searchTerm.toLowerCase();
-    return (
-      work.title?.toLowerCase().includes(s) ||
-      work.description?.toLowerCase().includes(s) ||
-      work.pubYear?.toString().includes(s) ||
-      work.type?.some(t => t.toLowerCase().includes(s))
-    );
+    
+    const searchableContent = [
+      work.title,
+      work.description,
+      work.brief,
+      work.magazine,
+      work.sourceName,
+      work.pubYear?.toString(),
+      work.pubMonth,
+      ...(Array.isArray(work.type) ? work.type : [work.type]),
+      work.isTranslation ? 'translation' : '',
+      work.audioUrl ? 'audio' : '',
+      work.pdfUrl ? 'pdf' : ''
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    return searchableContent.includes(s);
   });
 
   return (
