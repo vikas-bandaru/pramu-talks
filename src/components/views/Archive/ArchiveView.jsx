@@ -38,7 +38,9 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
     const s = searchTerm.toLowerCase();
     return (
       work.title?.toLowerCase().includes(s) ||
-      work.description?.toLowerCase().includes(s)
+      work.description?.toLowerCase().includes(s) ||
+      work.pubYear?.toString().includes(s) ||
+      work.type?.some(t => t.toLowerCase().includes(s))
     );
   });
 
