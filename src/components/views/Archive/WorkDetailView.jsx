@@ -1,13 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { 
   ArrowLeft, Calendar, ExternalLink, 
   BookOpen, PlayCircle, Globe, ShoppingCart, 
-  FileText, Headphones, Timer, Clock, Share2
+  FileText, Headphones, Timer, Clock, Share2,
+  Maximize2, X, Check
 } from 'lucide-react';
 import { CATEGORIES } from '../../../constants/categories';
 
 const WorkDetailView = ({ work, onBack }) => {
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [work.id]);
@@ -45,8 +49,49 @@ const WorkDetailView = ({ work, onBack }) => {
 
   const readTime = estimateReadTime();
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `Pramu Talks: ${work.title}`,
+      text: work.description || work.brief,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.log('Share failed:', err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 animate-in fade-in duration-700 pb-20">
+    <div className="min-h-screen bg-white dark:bg-slate-950 animate-in fade-in duration-700 pb-20 relative">
+      
+      {/* Lightbox Overlay */}
+      {isLightboxOpen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 md:p-10 animate-in zoom-in duration-300"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <button className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+            <X size={32} />
+          </button>
+          <img 
+            src={work.thumbnail} 
+            className="max-w-full max-h-full object-contain shadow-2xl rounded-lg" 
+            alt="Archival Scan" 
+          />
+          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/40 text-[10px] uppercase font-black tracking-widest">
+            Scholarly Archival View
+          </p>
+        </div>
+      )}
+
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-50 px-4 py-4 dark:bg-slate-950/80 dark:border-slate-900">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -88,7 +133,10 @@ const WorkDetailView = ({ work, onBack }) => {
           
           {/* Column 1: Media & Actions - Priority 1 on Mobile */}
           <div className="lg:col-span-5 xl:col-span-4 order-1">
-            <div className={`relative group ${isPortrait ? 'aspect-[2/3] w-[60%] mx-auto lg:w-full' : 'aspect-video w-full'} rounded-[1.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-slate-100 dark:bg-slate-900 border-4 md:border-8 border-white dark:border-slate-800`}>
+            <div 
+              className={`relative group ${isPortrait ? 'aspect-[2/3] w-[60%] mx-auto lg:w-full' : 'aspect-video w-full'} rounded-[1.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-slate-100 dark:bg-slate-900 border-4 md:border-8 border-white dark:border-slate-800 ${!embedUrl ? 'cursor-zoom-in' : ''}`}
+              onClick={() => !embedUrl && setIsLightboxOpen(true)}
+            >
               {embedUrl ? (
                 <iframe 
                   src={embedUrl}
@@ -96,7 +144,12 @@ const WorkDetailView = ({ work, onBack }) => {
                   allowFullScreen
                 />
               ) : (
-                <img src={work.thumbnail} className="w-full h-full object-cover" alt={work.title} />
+                <>
+                  <img src={work.thumbnail} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={work.title} />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <Maximize2 className="text-white" size={32} />
+                  </div>
+                </>
               )}
             </div>
 
@@ -186,8 +239,21 @@ const WorkDetailView = ({ work, onBack }) => {
             {/* Bottom Utility Bar */}
             <div className="mt-20 pt-10 border-t border-slate-100 dark:border-slate-900 flex flex-wrap gap-8 items-center justify-between">
               <div className="flex items-center gap-6">
-                <button className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors uppercase font-black text-[10px] tracking-widest">
-                  <Share2 size={16} /> Share Archive
+                <button 
+                  onClick={handleShare}
+                  className="flex items-center gap-2 text-slate-400 hover:text-red-600 transition-all uppercase font-black text-[10px] tracking-widest group"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={16} className="text-green-500" />
+                      <span className="text-green-500">Link Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Share2 size={16} className="group-hover:rotate-12 transition-transform" />
+                      <span>Share Archive</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
