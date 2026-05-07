@@ -974,7 +974,7 @@ const App = () => {
 
       <div className="pt-16">
         {activeTab === 'home' && <HomeView setActiveTab={setActiveTab} data={homeData} works={works} setSelectedWork={setSelectedWork} />}
-        {activeTab === 'works' && !selectedWork && <ArchiveView works={works.filter(w => filter === 'all' || [].concat(w.type).includes(filter))} isAdmin={isAdmin} onDelete={handleDelete} setFilter={setFilter} currentFilter={filter} onSelect={setSelectedWork} />}
+        {activeTab === 'works' && !selectedWork && <ArchiveView works={works.filter(w => filter === 'all' || [].concat(w.type).some(t => t?.trim() === filter))} isAdmin={isAdmin} onDelete={handleDelete} setFilter={setFilter} currentFilter={filter} onSelect={setSelectedWork} />}
         {activeTab === 'works' && selectedWork && <WorkDetailView work={selectedWork} onBack={() => setSelectedWork(null)} />}
         {/* {activeTab === 'videos' && <VideosView works={featuredVideos} />} */}
         {activeTab === 'studio' && isAdmin && (
@@ -1094,6 +1094,14 @@ const WorkDetailView = ({ work, onBack }) => {
   );
 };
 
+const CATEGORIES = [
+  { id: 'book', label: 'Book' },
+  { id: 'essay', label: 'Essay' },
+  { id: 'story', label: 'Story' },
+  { id: 'review', label: 'Review' },
+  { id: 'audiobook', label: 'Audiobook' }
+];
+
 const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSelect }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -1109,8 +1117,9 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
     <div className="max-w-7xl mx-auto px-4 py-16 animate-in slide-in-from-bottom-6 duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-16">
         <div className="flex flex-wrap gap-2 items-center">
-          {['all', 'book', 'essay', 'story', 'review', 'audiobook'].map(cat => (
-            <button key={cat} onClick={() => setFilter(cat)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat}</button>
+          <button onClick={() => setFilter('all')} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === 'all' ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>All</button>
+          {CATEGORIES.map(cat => (
+            <button key={cat.id} onClick={() => setFilter(cat.id)} className={`px-5 py-3 rounded-2xl font-black uppercase tracking-widest text-[9px] transition-all border ${currentFilter === cat.id ? 'bg-red-600 text-white border-red-600 shadow-lg' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-600'}`}>{cat.label}</button>
           ))}
         </div>
 
@@ -1139,7 +1148,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
               <div className={`${isLandscape ? 'aspect-video' : 'aspect-[4/5]'} bg-slate-100 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden relative mb-4 md:mb-6 dark:bg-slate-950`}>
                 <img src={work.thumbnail || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400'} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt={work.title} />
                 <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur text-[9px] font-black uppercase tracking-widest rounded-lg shadow-sm border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800 dark:text-white">
-                  {[].concat(work.type).join(' / ')}
+                  {[].concat(work.type).map(tid => CATEGORIES.find(c => c.id === tid)?.label || tid).join(' / ')}
                 </div>
                 {isAdmin && <button onClick={(e) => { e.stopPropagation(); onDelete(work.id); }} className="absolute top-4 right-4 p-2.5 bg-red-600 text-white rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700 z-10"><Trash2 size={16} /></button>}
               </div>
@@ -1537,13 +1546,14 @@ const CreatorStudio = ({
     }
   };
 
-  const types = [
-    { id: 'book', label: 'Book', icon: Book },
-    { id: 'essay', label: 'Essay/Article', icon: Newspaper },
-    { id: 'story', label: 'Story', icon: PenTool },
-    { id: 'review', label: 'Review', icon: Star },
-    { id: 'audiobook', label: 'Audiobook', icon: Headphones }
-  ];
+  const types = CATEGORIES.map(cat => ({
+    ...cat,
+    icon: cat.id === 'book' ? Book :
+          cat.id === 'essay' ? Newspaper :
+          cat.id === 'story' ? PenTool :
+          cat.id === 'review' ? Star :
+          Headphones
+  }));
 
   return (
     <div className="max-w-7xl mx-auto py-16 px-4 space-y-12 animate-in zoom-in-95 duration-300">
@@ -2149,9 +2159,12 @@ const CreatorStudio = ({
                         {studioTab === 'video' ? (
                           <span className="px-2 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase rounded dark:bg-slate-800 dark:text-slate-400">VIDEO CONTENT</span>
                         ) : (
-                          [].concat(work.type).map(t => (
-                            <span key={t} className="px-2 py-1 bg-red-100 text-red-600 text-[9px] font-black uppercase rounded dark:bg-red-900/20 dark:text-red-400">{t}</span>
-                          ))
+                          <div className="flex flex-wrap gap-1">
+                            {[].concat(work.type || []).map(t => {
+                              const label = CATEGORIES.find(c => c.id === t)?.label || t;
+                              return <span key={t} className="px-2 py-1 bg-red-50 text-red-600 text-[8px] font-black uppercase rounded-lg border border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/30">{label}</span>
+                            })}
+                          </div>
                         )}
                       </div>
                     </td>
