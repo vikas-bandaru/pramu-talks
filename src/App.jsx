@@ -120,7 +120,7 @@ const App = () => {
   const [works, setWorks] = useState([]);
   const [topVideos, setTopVideos] = useState(FALLBACK_VIDEOS);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('book');
   const [socialLinks, setSocialLinks] = useState({ youtube: '', twitter: '', facebook: '', instagram: '' });
 
   const [clickCount, setClickCount] = useState(0);
