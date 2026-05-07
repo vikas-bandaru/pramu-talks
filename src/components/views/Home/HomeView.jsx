@@ -1,0 +1,200 @@
+import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Award, BookOpen, Star, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import NandiCard from './NandiCard';
+import AwardsGallery from './AwardsGallery';
+import MediaGallery from './MediaGallery';
+import Pillars from './Pillars';
+
+const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
+  const [activeRoot, setActiveRoot] = useState(null);
+  const [overlayIndex, setOverlayIndex] = useState(null);
+  const [touchStart, setTouchStart] = useState(null);
+
+  const awards = data.awardsGallery || [];
+  
+  const handleNext = (e) => {
+    e?.stopPropagation();
+    setOverlayIndex((prev) => (prev + 1) % awards.length);
+  };
+
+  const handlePrev = (e) => {
+    e?.stopPropagation();
+    setOverlayIndex((prev) => (prev - 1 + awards.length) % awards.length);
+  };
+
+  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (!touchStart) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    if (touchStart - touchEnd > 70) handleNext();
+    if (touchStart - touchEnd < -70) handlePrev();
+    setTouchStart(null);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (overlayIndex === null) return;
+      if (e.key === 'ArrowRight') handleNext();
+      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'Escape') setOverlayIndex(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [overlayIndex]);
+
+  return (
+    <div className="animate-in fade-in duration-700 overflow-x-hidden">
+      {/* Hero Section */}
+      <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
+            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black mb-6 md:mb-8 leading-[0.9] tracking-tight uppercase">
+              <ReactMarkdown components={{ p: ({ node, ...props }) => <React.Fragment {...props} />, strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-400 mb-8 md:mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
+            <div className="flex flex-wrap gap-4 md:gap-5">
+              <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
+              <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all active:scale-95">The Archive</button>
+            </div>
+          </div>
+        </div>
+        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" alt="" />}
+        <div className="absolute -bottom-48 -right-48 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-red-600/5 blur-[80px] md:blur-[120px] rounded-full" />
+      </section>
+
+      {/* Philosophy Section */}
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-black mb-6 uppercase tracking-tighter dark:text-white">{data.philosophyTitle}</h2>
+            <div className="w-12 h-1 bg-red-600 mb-8" />
+            <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium italic mb-6 dark:text-slate-300">"{data.philosophyQuote}"</p>
+            <p className="text-slate-500 leading-relaxed dark:text-slate-400 text-sm md:text-base">{data.philosophyText}</p>
+          </div>
+          <div className="bg-slate-50 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-12 border border-slate-100 flex flex-col items-center justify-center text-center dark:bg-slate-950 dark:border-slate-800">
+            <BookOpen className="w-12 h-12 md:w-16 md:h-16 text-red-600 mb-4" />
+            <p className="text-xl md:text-2xl font-black text-slate-900 uppercase dark:text-white">{data.philosophyAccent}</p>
+            <p className="text-[9px] md:text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Sri Sri's Eternal Inspiration</p>
+          </div>
+        </div>
+      </section>
+
+      {/* extracted Pillars (Intellectual Foundations) component */}
+      <Pillars 
+        activeRoot={activeRoot} 
+        setActiveRoot={setActiveRoot} 
+        data={data} 
+        works={works} 
+        setActiveTab={setActiveTab} 
+        setSelectedWork={setSelectedWork} 
+      />
+
+      {/* About Section */}
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 md:gap-16 items-start">
+          <div className="flex-1">
+            <h2 className="text-3xl md:text-4xl font-black mb-6 md:mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
+            <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none">
+              <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium italic mb-8 md:mb-10 dark:text-slate-300">
+                "A distinguished public intellectual, celebrated poet, and veteran journalist whose career spans over four decades of scholarly and cultural discourse."
+              </p>
+              <div className="space-y-6 text-slate-500 dark:text-slate-400 leading-relaxed text-lg">
+                <p>
+                  <strong>Dr. Bandaru Rama Vara Prasada Murthy</strong>, widely recognized as <strong>Dr. Prasada Murthy</strong>, was born on January 5, 1960, in Nidamarru, Andhra Pradesh. He is a formidable scholar of language and culture, holding an M.A. in Telugu, an M.A. in English, and a Ph.D. in Telugu Literature.
+                </p>
+                <p>
+                  With over 20 years of leadership in digital and print journalism, Dr. Murthy has worked with prominent media outlets, earning widespread acclaim for his insightful commentary. In 2008, his dedication to Telugu heritage was honored with two prestigious <strong>Nandi Awards</strong> for his definitive documentary on the legendary poet <strong>Sri Sri</strong>.
+                </p>
+                <p>
+                  A prolific author, he has published 19 poetry collections, a short story book, and a seminal Ph.D. thesis. Beyond his literary achievements, he is a passionate advocate for social justice, secularism, and human rights. Today, through his independent YouTube channel, <strong>"Pramu Talks,"</strong> he continues to inspire audiences by promoting rational thinking and progressive values across India.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="w-full md:w-80 bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white shadow-2xl relative overflow-hidden group border border-slate-800">
+            <div className="absolute -top-10 -right-10 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full" />
+            <div className="relative z-10">
+              <div className="bg-red-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20">
+                <Star size={24} />
+              </div>
+              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murthy</h4>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet & Journalist</p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Founded</span>
+                  <span className="text-xs font-bold">Pramu Talks</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Exp.</span>
+                  <span className="text-xs font-bold">40+ Years</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Awards</span>
+                  <span className="text-xs font-bold text-red-500">2x Nandi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Awards Section */}
+      <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 md:mb-16 px-4">
+            <div className="flex-1">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter dark:text-white">{data.awardsTitle}</h2>
+              <div className="w-12 h-1 bg-red-600 mt-2 md:hidden" />
+            </div>
+            <div className="flex gap-2">
+              <div onClick={handlePrev} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800 cursor-pointer hover:bg-slate-50 transition-colors"><ChevronLeft size={14} /></div>
+              <div onClick={handleNext} className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 dark:border-slate-800 cursor-pointer hover:bg-slate-50 transition-colors"><ChevronRight size={14} /></div>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row gap-12 md:gap-16 items-stretch mb-16">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <AwardsGallery awards={awards} onImageClick={setOverlayIndex} />
+            </div>
+            <NandiCard imageUrl={data.nandiImageUrl} title={data.nandiTitle} text={data.nandiText} />
+          </div>
+        </div>
+      </section>
+
+      <MediaGallery gallery={data.gallery} />
+
+      {/* Overlay Carousel */}
+      {overlayIndex !== null && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-300" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+          <button onClick={() => setOverlayIndex(null)} className="absolute top-6 right-6 md:top-12 md:right-12 text-white/40 hover:text-white transition-all p-4 bg-white/5 rounded-full backdrop-blur-md">
+            <ChevronLeft className="rotate-45" size={24} />
+          </button>
+          
+          <div className="w-full max-w-5xl aspect-video md:aspect-[16/9] relative group">
+            <img src={awards[overlayIndex]?.url} className="w-full h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-500" alt="" />
+            
+            <button onClick={handlePrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 hidden md:block">
+              <ChevronLeft size={24} />
+            </button>
+            <button onClick={handleNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 hidden md:block">
+              <ChevronRight size={24} />
+            </button>
+          </div>
+
+          <div className="mt-8 md:mt-12 text-center max-w-2xl px-4 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">{awards[overlayIndex]?.year || 'Year Pending'}</span>
+              <div className="w-12 h-[1px] bg-white/10" />
+              <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{overlayIndex + 1} / {awards.length}</p>
+            </div>
+            <h3 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-2">{awards[overlayIndex]?.title || 'Untitled Award'}</h3>
+            <p className="text-red-500 font-bold uppercase tracking-[0.2em] text-xs mb-6">{awards[overlayIndex]?.authority || 'Authority Pending'}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HomeView;

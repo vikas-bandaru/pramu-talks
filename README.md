@@ -73,11 +73,20 @@ service firebase.storage {
 ## ⚙️ Technical Architecture
 
 - **Engine**: React 19 + Vite.
+- **Architecture**: Modular Component-Based Architecture (Separated Views & Shared Logic).
 - **Intelligence**: Google Gemini 3 Flash.
 - **Database**: Firebase Firestore.
 - **Cloud Storage**: Firebase Storage (Binary).
 - **Styling**: Tailwind CSS 4.0.
 - **Icons**: Lucide React.
+
+## 📁 Project Structure
+
+The codebase has been modularized for scalability:
+- `src/components/views/`: Contains independent feature modules (Home, Archive, Research, Studio).
+- `src/components/shared/`: Reusable UI components (InputFields, Modals).
+- `src/components/layout/`: Global layout elements (SEO, Footer).
+- `src/constants/`: Shared configuration and category definitions.
 
 ## 📦 Getting Started
 
@@ -87,7 +96,12 @@ service firebase.storage {
    - A Firebase Project with Firestore, Storage, and Authentication enabled.
 
 2. **Environment Setup**:
-   Paste your configuration into the `myFirebaseConfig` and `geminiApiKey` variables at the top of `App.jsx`, or use the **System Settings** in the Studio to override keys at runtime.
+   Create a `.env` file in the root directory and add your credentials:
+   ```env
+   VITE_FIREBASE_API_KEY=your_firebase_key
+   VITE_GEMINI_API_KEY=your_gemini_key
+   ```
+   *Note: Ensure `.env` is added to your `.gitignore` to prevent leaking keys in public repositories.*
 
 3. **Development**:
    ```bash
@@ -111,3 +125,4 @@ Transitioning the media galleries into a high-density, Bento-style grid with TV-
 ---
 **"Literature is not just words on a page; it is the heartbeat of society."**
 © 2026 Pramu Talks. All rights reserved.
+
