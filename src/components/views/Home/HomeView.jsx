@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Award, BookOpen, Star, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import { Award, BookOpen, Star, ChevronLeft, ChevronRight, ImageIcon, Sparkles } from 'lucide-react';
 import NandiCard from './NandiCard';
 import AwardsGallery from './AwardsGallery';
 import MediaGallery from './MediaGallery';
 import Pillars from './Pillars';
 
+const YoutubeIcon = ({ size = 20, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+  </svg>
+);
+
 const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   const [activeRoot, setActiveRoot] = useState(null);
   const [overlayIndex, setOverlayIndex] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
+  const [sparkles, setSparkles] = useState([]);
 
   const awards = data.awardsGallery || [];
   
@@ -32,6 +39,21 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
     setTouchStart(null);
   };
 
+  const triggerSparkle = (e) => {
+    e.stopPropagation();
+    const newSparkles = Array.from({ length: 12 }).map((_, i) => ({
+      id: Math.random(),
+      x: (Math.random() - 0.5) * 160,
+      y: (Math.random() - 0.5) * 160,
+      size: Math.random() * 12 + 8,
+      delay: Math.random() * 0.2
+    }));
+    setSparkles(prev => [...prev, ...newSparkles]);
+    setTimeout(() => {
+      setSparkles(prev => prev.filter(s => !newSparkles.find(ns => ns.id === s.id)));
+    }, 1000);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (overlayIndex === null) return;
@@ -43,25 +65,108 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [overlayIndex]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="animate-in fade-in duration-700 overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="bg-slate-900 text-white py-20 md:py-32 relative overflow-hidden dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-8 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
-            <h1 className="text-4xl sm:text-5xl md:text-8xl font-black mb-6 md:mb-8 leading-[0.9] tracking-tight uppercase">
-              <ReactMarkdown components={{ p: ({ node, ...props }) => <React.Fragment {...props} />, strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> }}>{data.heroTitle}</ReactMarkdown>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-400 mb-8 md:mb-10 leading-relaxed max-w-2xl font-medium">{data.heroSubtitle}</p>
-            <div className="flex flex-wrap gap-4 md:gap-5">
-              <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="bg-red-600 hover:bg-red-700 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95">Watch Channel</button>
-              <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 md:px-10 py-4 md:py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all active:scale-95">The Archive</button>
+      {/* Hero Section - Split Grid Architecture */}
+      <section className="bg-slate-900 text-white relative overflow-hidden dark:bg-slate-950 min-h-[70vh] md:min-h-[90vh] flex items-center pt-12 md:pt-20 pb-12 md:pb-20">
+        {/* Background Glows */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full" />
+          <div className="absolute top-1/2 right-0 w-96 h-96 bg-red-600/5 blur-[120px] rounded-full" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 relative z-30 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-center">
+            
+            {/* Column: Integrated Portrait - Priority on Mobile */}
+            <div className="lg:col-span-5 xl:col-span-4 relative group animate-in zoom-in duration-1000 order-1 lg:order-2">
+              <div className="relative aspect-square sm:aspect-[3/4] md:aspect-[4/5] rounded-[2.5rem] md:rounded-[4rem] overflow-hidden shadow-2xl border-4 md:border-[12px] border-white/5 bg-slate-800 dark:bg-slate-900 mx-auto max-w-[280px] sm:max-w-none">
+                <img 
+                  src="/dr-murthy.jpg" 
+                  className="w-full h-full object-cover object-[center_15%] transition-transform duration-1000 group-hover:scale-105" 
+                  alt="Dr. Prasada Murthy"
+                  onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                />
+                
+                {/* Advanced Archival Blending */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 dark:from-slate-950" />
+                <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-[2.5rem] md:rounded-[4rem]" />
+              </div>
+              
+              {/* Floating Decorative Elements */}
+              <div 
+                className="absolute -bottom-4 -left-4 bg-red-600 text-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-2xl hidden sm:block animate-bounce duration-[3000ms] cursor-pointer hover:scale-110 active:scale-95 transition-transform z-50 overflow-visible"
+                onClick={triggerSparkle}
+              >
+                <Star className="w-6 h-6 md:w-8 md:h-8" />
+                
+                {/* Sparkle Particles */}
+                {sparkles.map(s => (
+                  <Sparkles 
+                    key={s.id} 
+                    className="absolute text-yellow-400 pointer-events-none opacity-0 animate-[sparkle_0.8s_ease-out_forwards]" 
+                    style={{ 
+                      left: `calc(50% + ${s.x}px)`, 
+                      top: `calc(50% + ${s.y}px)`,
+                      width: s.size,
+                      height: s.size,
+                      animationDelay: `${s.delay}s`
+                    }} 
+                  />
+                ))}
+
+                <style dangerouslySetInnerHTML={{ __html: `
+                  @keyframes sparkle {
+                    0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
+                    100% { transform: translate(-50%, -50%) scale(1.5) rotate(180deg); opacity: 0; }
+                  }
+                `}} />
+              </div>
             </div>
+
+            {/* Column: Text Content */}
+            <div className="lg:col-span-7 xl:col-span-8 animate-in slide-in-from-left duration-700 order-2 lg:order-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-10 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
+              
+              <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[0.9] tracking-tighter uppercase whitespace-pre-line">
+                <ReactMarkdown components={{ 
+                  p: ({ node, ...props }) => <React.Fragment {...props} />, 
+                  strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> 
+                }}>
+                  {data.heroTitle}
+                </ReactMarkdown>
+              </h1>
+              
+              {data.heroSubtitle && (
+                <h2 className="text-xl sm:text-2xl md:text-4xl font-medium italic text-slate-400 mb-10 md:mb-14 tracking-tight opacity-90 font-serif flex flex-wrap justify-center lg:justify-start items-center gap-y-2">
+                  {data.heroSubtitle.split(/\s*[•·|]\s*/).map((part, i, arr) => (
+                    <React.Fragment key={i}>
+                      <span>{part.trim()}</span>
+                      {i < arr.length - 1 && (
+                        <span className="text-red-600 px-3 md:px-5 font-bold not-italic opacity-100 select-none">•</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </h2>
+              )}
+              
+              <div className="flex flex-wrap justify-center lg:justify-start gap-4 md:gap-6">
+                <button onClick={() => window.open(data.watchChannelLink || 'https://www.youtube.com/@pramutalks', '_blank')} className="flex items-center gap-3 bg-red-600 hover:bg-red-700 text-white px-8 md:px-12 py-4 md:py-6 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all shadow-xl shadow-red-600/20 active:scale-95 group">
+                  <YoutubeIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  Watch Channel
+                </button>
+                <button onClick={() => setActiveTab('works')} className="bg-white/5 hover:bg-white/10 backdrop-blur-md text-white border border-white/10 px-8 md:px-12 py-4 md:py-6 rounded-2xl font-black uppercase tracking-widest text-[10px] md:text-xs transition-all active:scale-95">Explore Literature</button>
+              </div>
+            </div>
+
           </div>
         </div>
-        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" alt="" />}
-        <div className="absolute -bottom-48 -right-48 w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-red-600/5 blur-[80px] md:blur-[120px] rounded-full" />
+
+        {data.heroBgUrl && <img src={data.heroBgUrl} className="absolute inset-0 w-full h-full object-cover opacity-10 pointer-events-none mix-blend-overlay z-0" alt="" />}
       </section>
 
       {/* Philosophy Section */}
@@ -120,7 +225,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
                 <Star size={24} />
               </div>
               <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murthy</h4>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet & Journalist</p>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet, Journalist, & YouTuber</p>
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2">
                   <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Founded</span>

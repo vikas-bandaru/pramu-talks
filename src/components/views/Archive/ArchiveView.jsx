@@ -69,7 +69,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
         <div className="max-w-2xl">
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 dark:text-white leading-[0.9]">
             Literary <br />
-            <span className="text-red-600 underline decoration-slate-200 underline-offset-8">Archives</span>
+            <span className="text-red-600 underline decoration-slate-200 underline-offset-8">Content</span>
           </h2>
           <p className="text-slate-500 font-medium text-lg leading-relaxed dark:text-slate-400 max-w-lg">
             Explore a comprehensive collection of modern Telugu literature,
@@ -85,7 +85,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-600 transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search archives..."
+              placeholder="Search collection..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-14 pr-12 py-5 bg-slate-100 rounded-[2rem] text-sm font-bold outline-none focus:ring-2 focus:ring-red-600/20 transition-all dark:bg-slate-900 dark:text-white shadow-inner"

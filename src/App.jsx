@@ -72,8 +72,8 @@ const storage = getStorage(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : 'pramu-talks-v2';
 
 const DEFAULT_HOME_CONTENT = {
-  heroTitle: "Poetry & **Journalism.** Truth in Words.",
-  heroSubtitle: "Bridging the gap between the progressive literature and the dynamic world of digital media.",
+  heroTitle: "Dr. **Prasada Murthy**",
+  heroSubtitle: "Poet • Journalist • YouTuber",
   heroBadge: "Nandi Awardee 2008",
   philosophyTitle: "Core Philosophy",
   philosophyQuote: "Literature is not just words on a page; it is the heartbeat of society.",
@@ -406,13 +406,13 @@ const App = () => {
               </div>
               <div>
                 <h1 className="text-xl font-black tracking-tighter leading-none uppercase dark:text-white">Pramu Talks</h1>
-                <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest leading-none mt-1 dark:text-red-500">Official Archive</p>
+                <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest leading-none mt-1 dark:text-red-500">Official Website</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-6">
               {[
                 { id: 'home', label: 'Home', icon: Home },
-                { id: 'works', label: 'Archive', icon: Library },
+                { id: 'works', label: 'Literature', icon: Library },
                 { id: 'studio', label: 'Studio', icon: Settings, admin: true },
                 { id: 'research', label: 'Research', icon: Database, admin: true },
               ].filter(item => !item.admin || isAdmin).map(item => (
@@ -436,7 +436,7 @@ const App = () => {
             <div className="px-4 pt-2 pb-6 space-y-1">
               {[
                 { id: 'home', label: 'Home', icon: Home },
-                { id: 'works', label: 'Archive', icon: Library },
+                { id: 'works', label: 'Literature', icon: Library },
                 { id: 'studio', label: 'Studio', icon: Settings, admin: true },
                 { id: 'research', label: 'Research', icon: Database, admin: true },
               ].filter(item => !item.admin || isAdmin).map(item => (
