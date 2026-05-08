@@ -15,10 +15,12 @@ const YoutubeIcon = ({ size = 20, className = "" }) => (
 const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
   const [activeRoot, setActiveRoot] = useState(null);
   const [overlayIndex, setOverlayIndex] = useState(null);
+  const [mediaOverlayIndex, setMediaOverlayIndex] = useState(null);
   const [touchStart, setTouchStart] = useState(null);
   const [sparkles, setSparkles] = useState([]);
 
   const awards = data.awardsGallery || [];
+  const gallery = data.gallery || [];
   
   const handleNext = (e) => {
     e?.stopPropagation();
@@ -30,12 +32,28 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
     setOverlayIndex((prev) => (prev - 1 + awards.length) % awards.length);
   };
 
+  const handleMediaNext = (e) => {
+    e?.stopPropagation();
+    setMediaOverlayIndex((prev) => (prev + 1) % gallery.length);
+  };
+
+  const handleMediaPrev = (e) => {
+    e?.stopPropagation();
+    setMediaOverlayIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  };
+
   const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
   const handleTouchEnd = (e) => {
     if (!touchStart) return;
     const touchEnd = e.changedTouches[0].clientX;
-    if (touchStart - touchEnd > 70) handleNext();
-    if (touchStart - touchEnd < -70) handlePrev();
+    if (touchStart - touchEnd > 70) {
+      if (overlayIndex !== null) handleNext();
+      if (mediaOverlayIndex !== null) handleMediaNext();
+    }
+    if (touchStart - touchEnd < -70) {
+      if (overlayIndex !== null) handlePrev();
+      if (mediaOverlayIndex !== null) handleMediaPrev();
+    }
     setTouchStart(null);
   };
 
@@ -56,14 +74,24 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (overlayIndex === null) return;
-      if (e.key === 'ArrowRight') handleNext();
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'Escape') setOverlayIndex(null);
+      if (overlayIndex === null && mediaOverlayIndex === null) return;
+      
+      if (e.key === 'ArrowRight') {
+        if (overlayIndex !== null) handleNext();
+        if (mediaOverlayIndex !== null) handleMediaNext();
+      }
+      if (e.key === 'ArrowLeft') {
+        if (overlayIndex !== null) handlePrev();
+        if (mediaOverlayIndex !== null) handleMediaPrev();
+      }
+      if (e.key === 'Escape') {
+        setOverlayIndex(null);
+        setMediaOverlayIndex(null);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [overlayIndex]);
+  }, [overlayIndex, mediaOverlayIndex, awards.length, gallery.length]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -267,7 +295,37 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
         </div>
       </section>
 
-      <MediaGallery gallery={data.gallery} />
+      <MediaGallery gallery={data.gallery} onImageClick={setMediaOverlayIndex} />
+      
+      {/* Media Overlay Carousel */}
+      {mediaOverlayIndex !== null && (
+        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-300" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+          <button onClick={() => setMediaOverlayIndex(null)} className="absolute top-6 right-6 md:top-12 md:right-12 text-white/40 hover:text-white transition-all p-4 bg-white/5 rounded-full backdrop-blur-md">
+            <ChevronLeft className="rotate-45" size={24} />
+          </button>
+          
+          <div className="w-full max-w-5xl aspect-video md:aspect-[16/9] relative group">
+            <img src={gallery[mediaOverlayIndex]?.url} className="w-full h-full object-contain drop-shadow-2xl animate-in zoom-in-95 duration-500" alt="" />
+            
+            <button onClick={handleMediaPrev} className="absolute left-4 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 hidden md:block">
+              <ChevronLeft size={24} />
+            </button>
+            <button onClick={handleMediaNext} className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-white/5 hover:bg-white/10 text-white rounded-full transition-all opacity-0 group-hover:opacity-100 hidden md:block">
+              <ChevronRight size={24} />
+            </button>
+          </div>
+
+          <div className="mt-8 md:mt-12 text-center max-w-2xl px-4 animate-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-red-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Media Moment</span>
+              <div className="w-12 h-[1px] bg-white/10" />
+              <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">{mediaOverlayIndex + 1} / {gallery.length}</p>
+            </div>
+            <h3 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-2">{gallery[mediaOverlayIndex]?.label || 'Media Moment'}</h3>
+            <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-xs mb-6">Pramu Talks Chronicles</p>
+          </div>
+        </div>
+      )}
 
       {/* Overlay Carousel */}
       {overlayIndex !== null && (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const MediaGallery = ({ gallery }) => (
+const MediaGallery = ({ gallery, onImageClick }) => (
   <section className="py-20 md:py-24 bg-slate-50 px-0 md:px-4 dark:bg-slate-950 overflow-hidden">
     <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 px-4">
@@ -17,7 +17,11 @@ const MediaGallery = ({ gallery }) => (
 
       <div className="flex md:grid md:grid-cols-4 gap-6 overflow-x-auto pb-8 no-scrollbar snap-x snap-mandatory md:overflow-visible px-4">
         {(gallery || []).map((item, i) => (
-          <div key={i} className="flex-shrink-0 w-[260px] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center">
+          <div 
+            key={i} 
+            onClick={() => onImageClick && onImageClick(i)}
+            className="flex-shrink-0 w-[260px] md:w-auto group relative aspect-square bg-slate-200 rounded-[2.5rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all dark:bg-slate-900 snap-center"
+          >
             <img src={item.url} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt={item.label} />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
               <div>
