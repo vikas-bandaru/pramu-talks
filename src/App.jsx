@@ -405,7 +405,7 @@ const App = () => {
                 <Mic2 className="text-white w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-xl font-black tracking-tighter leading-none uppercase dark:text-white">Pramu Talks</h1>
+                <h1 className="text-xl font-black tracking-tighter leading-none dark:text-white">Pramu Talks</h1>
                 <p className="text-[10px] text-red-600 font-bold uppercase tracking-widest leading-none mt-1 dark:text-red-500">Official Website</p>
               </div>
             </div>

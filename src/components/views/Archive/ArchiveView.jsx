@@ -67,7 +67,7 @@ const ArchiveView = ({ works, isAdmin, onDelete, setFilter, currentFilter, onSel
 
         {/* Left Side: Title and Subtitle */}
         <div className="max-w-2xl">
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 dark:text-white leading-[0.9]">
+          <h2 className="text-5xl md:text-7xl font-black tracking-tighter mb-6 dark:text-white leading-[0.9]">
             Literary <br />
             <span className="text-red-600 underline decoration-slate-200 underline-offset-8">Content</span>
           </h2>

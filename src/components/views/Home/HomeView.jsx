@@ -160,7 +160,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
             <div className="lg:col-span-7 xl:col-span-8 animate-in slide-in-from-left duration-700 order-2 lg:order-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-600/10 text-red-500 text-[10px] font-black uppercase tracking-widest mb-6 md:mb-10 border border-red-600/20"><Award className="w-3.5 h-3.5" /> {data.heroBadge}</div>
               
-              <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[0.9] tracking-tighter uppercase whitespace-pre-line">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-black mb-4 md:mb-6 leading-[0.9] tracking-tighter whitespace-pre-line">
                 <ReactMarkdown components={{ 
                   p: ({ node, ...props }) => <React.Fragment {...props} />, 
                   strong: ({ node, ...props }) => <span className="text-red-600 underline decoration-white/10 underline-offset-8" {...props} /> 
@@ -228,7 +228,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
       <section className="py-20 md:py-24 bg-white border-b border-slate-50 px-4 dark:bg-slate-900 dark:border-slate-800 overflow-hidden">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-12 md:gap-16 items-start">
           <div className="flex-1">
-            <h2 className="text-3xl md:text-4xl font-black mb-6 md:mb-8 uppercase tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-6 md:mb-8 tracking-tighter dark:text-white">About Dr. Prasada Murthy</h2>
             <div className="prose prose-sm md:prose-lg dark:prose-invert max-w-none">
               <p className="text-lg md:text-xl text-slate-600 leading-relaxed font-medium italic mb-8 md:mb-10 dark:text-slate-300">
                 "A distinguished public intellectual, celebrated poet, and veteran journalist whose career spans over four decades of scholarly and cultural discourse."
@@ -252,7 +252,7 @@ const HomeView = ({ setActiveTab, data, works, setSelectedWork }) => {
               <div className="bg-red-600 w-12 h-12 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-red-600/20">
                 <Star size={24} />
               </div>
-              <h4 className="text-xl font-black uppercase tracking-tight mb-2">Dr. Prasada Murthy</h4>
+              <h4 className="text-xl font-black tracking-tight mb-2">Dr. Prasada Murthy</h4>
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Telugu Poet, Journalist, & YouTuber</p>
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-white/5 pb-2">

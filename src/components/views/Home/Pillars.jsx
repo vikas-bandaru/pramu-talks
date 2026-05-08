@@ -82,7 +82,7 @@ const Pillars = ({ activeRoot, setActiveRoot, data, works, setActiveTab, setSele
                                       }}>
                                         <img src={item.featured.thumbnail} className="w-10 h-12 object-cover rounded-lg shadow-xl" alt="" />
                                         <div className="flex-1 min-w-0">
-                                          <p className="text-[8px] font-black uppercase tracking-widest text-red-500 mb-0.5">Featured Work</p>
+                                          <p className="text-[8px] font-black uppercase tracking-widest text-red-500 mb-0.5">Ph.D Thesis</p>
                                           <p className="text-white font-black text-xs truncate">{item.featured.title}</p>
                                         </div>
                                         <ChevronRight size={14} className="text-white/30" />

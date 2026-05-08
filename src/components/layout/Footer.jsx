@@ -7,7 +7,7 @@ const Footer = ({ socials }) => (
       <div>
         <div className="flex items-center gap-3 mb-8">
           <Mic2 className="text-red-600 w-8 h-8" />
-          <h2 className="text-3xl font-black uppercase tracking-tighter">Pramu Talks</h2>
+          <h2 className="text-3xl font-black tracking-tighter">Pramu Talks</h2>
         </div>
         <p className="text-xl text-slate-400 font-medium mb-12 max-w-sm italic tracking-tight dark:text-slate-500">"Literature is not just words on a page; it is the heartbeat of society."</p>
         <div className="flex gap-4">
@@ -38,7 +38,7 @@ const Footer = ({ socials }) => (
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-2">Academic & Literary Portal</p>
           <h3 className="text-4xl font-black uppercase tracking-tighter italic lg:text-5xl">Poetry & <span className="text-red-600 underline decoration-white/10 underline-offset-4">Journalism.</span></h3>
         </div>
-        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-12 dark:text-slate-600">© 2026 Pramu Talks. Official Dr. Prasada Murthy Archive.</p>
+        <p className="text-[10px] text-slate-500 font-bold tracking-widest mt-12 dark:text-slate-600">© 2026 Pramu Talks. Official Dr. Prasada Murthy Archive.</p>
       </div>
     </div>
     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-600/10 blur-[100px] rounded-full -mr-64 -mt-64" />
